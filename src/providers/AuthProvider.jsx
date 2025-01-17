@@ -11,10 +11,12 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { Auth } from "../firebase/firebase.config";
+import useAxiosPublic from "../Hooks/useAxiosPublic";
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const axiosPublic = useAxiosPublic();
 
   console.log(user);
 
@@ -49,13 +51,37 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(Auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
+      if (currentUser) {
+        const user = {
+          email: currentUser.email,
+          displayName: currentUser.displayName,
+          photoURL: currentUser.photoURL,
+        };
+
+        axiosPublic
+          .post(`${import.meta.env.VITE_MAIN_URL}/jwt`, user, {
+            withCredentials: true,
+          })
+          .then(() => {
+            setUser(currentUser);
+            setLoading(false);
+          });
+      } else {
+        axiosPublic.post(
+          `${import.meta.env.VITE_MAIN_URL}/logout`,
+          {},
+          {
+            withCredentials: true,
+          }
+        );
+        setUser(null);
+        setLoading(false);
+      }
     });
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [axiosPublic]);
 
   return (
     <AuthContext.Provider
