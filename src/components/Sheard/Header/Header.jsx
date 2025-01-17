@@ -1,10 +1,23 @@
 import { Link } from "react-router-dom";
 import logo from "../../../assets/logo-removebg-preview.png";
+import { useAuth } from "../../../contexts/AuthContext";
+import Swal from "sweetalert2";
 
 export default function Header() {
+  const { user, logOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      Swal.fire("Success", "Logout Successful", "success");
+    } catch {
+      Swal.fire("Error", "Logout Failed", "error");
+    }
+  };
+
   return (
     <header className="container mx-auto px-4 lg:px-10">
-      <nav className="navbar bg-white p-0 shadow-lg">
+      <nav className="navbar bg-white p-0">
         <div className="navbar-start">
           <div className="dropdown">
             <button
@@ -109,11 +122,42 @@ export default function Header() {
               <span className="badge badge-xs badge-primary indicator-item"></span>
             </div>
           </button>
-          <Link to="/auth/login">
-            <button className="btn bg-green-600 hover:bg-green-700 text-white">
-              Join Us
-            </button>
-          </Link>
+          {user ? (
+            <div className="dropdown dropdown-end">
+              <div
+                tabIndex={0}
+                role="button"
+                className="btn btn-ghost btn-circle avatar"
+              >
+                <div className="w-10 rounded-full">
+                  <img
+                    alt="Tailwind CSS Navbar component"
+                    src={user.photoURL}
+                  />
+                </div>
+              </div>
+              <ul
+                tabIndex={0}
+                className="menu menu-sm z-50 dropdown-content bg-base-100 rounded-box mt-3 w-52 p-2 shadow"
+              >
+                <li>
+                  <a className="justify-between">{user.displayName}</a>
+                </li>
+                <li>
+                  <Link to={`/dashboard/${user.uid}`}>Dashboard</Link>
+                </li>
+                <li>
+                  <button onClick={handleLogout}>Logout</button>
+                </li>
+              </ul>
+            </div>
+          ) : (
+            <Link to="/auth/login">
+              <button className="btn bg-green-600 hover:bg-green-700 text-white">
+                Join Us
+              </button>
+            </Link>
+          )}
         </div>
       </nav>
     </header>

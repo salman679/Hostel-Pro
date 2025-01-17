@@ -1,10 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useAxiosPublic } from "../Hooks/useAxiosPublic";
+import Swal from "sweetalert2";
 
 export default function SignUp() {
-  const { createUser, updateUser } = useAuth();
+  const { createUser, updateUser, signInWithGoogle } = useAuth();
   const axiosPublic = useAxiosPublic();
+
+  const navigate = useNavigate();
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -14,8 +17,6 @@ export default function SignUp() {
     const password = form.password.value;
 
     createUser(email, password).then(() => {
-      const user = { name, level: "Bronze" };
-
       //update on firebase
       updateUser(user)
         .then(() => {
@@ -28,15 +29,55 @@ export default function SignUp() {
       form.reset();
 
       //update on backend
+      const user = {
+        name,
+        email,
+        role: "Bronze",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
       axiosPublic
         .post("/users", user)
         .then((res) => {
-          console.log(res.data);
+          if (res.data.insertedId) {
+            Swal.fire("Success", "User added successfully", "success");
+            navigate("/auth/login");
+          }
         })
         .catch((error) => {
-          console.error(error);
+          console.error("Error adding user:", error);
         });
     });
+  }
+
+  async function handleGoogleLogin() {
+    try {
+      signInWithGoogle().then((result) => {
+        //update on backend
+        const user = {
+          name: result.user.displayName,
+          email: result.user.email,
+          role: "Bronze",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        axiosPublic
+          .post("/users", user)
+          .then((res) => {
+            if (res.data.insertedId) {
+              Swal.fire("Success", "User added successfully", "success");
+            }
+          })
+          .catch((error) => {
+            console.error("Error adding user:", error);
+          });
+
+        Swal.fire("Success", "Login Successful", "success");
+        navigate("/");
+      });
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
   }
 
   return (
@@ -95,6 +136,18 @@ export default function SignUp() {
             Sign Up
           </button>
         </form>
+
+        <div className="flex items-center justify-center mt-4">
+          <span className="border-t border-gray-300 flex-grow"></span>
+          <span className="mx-4 text-gray-600">or</span>
+          <span className="border-t border-gray-300 flex-grow"></span>
+        </div>
+        <button
+          className="w-full mt-3 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition"
+          onClick={handleGoogleLogin}
+        >
+          Google
+        </button>
         <p className="text-center text-sm text-gray-600 mt-4">
           Already have an account?{" "}
           <Link to="/auth/login" className="text-green-600 hover:underline">
