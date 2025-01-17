@@ -11,7 +11,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { Auth } from "../firebase/firebase.config";
-import useAxiosPublic from "../Hooks/useAxiosPublic";
+import { useAxiosPublic } from "../Hooks/useAxiosPublic";
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -59,14 +59,21 @@ export default function AuthProvider({ children }) {
         };
 
         axiosPublic
-          .post(`${import.meta.env.VITE_MAIN_URL}/jwt`, user, {
+          .post("/jwt", user, {
             withCredentials: true,
           })
-          .then(() => {
+          .then((res) => {
+            localStorage.setItem("accessToken", res.data.token);
+
             setUser(currentUser);
             setLoading(false);
+          })
+          .catch((error) => {
+            console.error("Error adding user:", error);
           });
       } else {
+        localStorage.removeItem("accessToken");
+
         axiosPublic.post(
           `${import.meta.env.VITE_MAIN_URL}/logout`,
           {},
