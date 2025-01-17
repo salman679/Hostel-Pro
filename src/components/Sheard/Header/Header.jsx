@@ -1,17 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../../../assets/logo-removebg-preview.png";
 import { useAuth } from "../../../contexts/AuthContext";
 import Swal from "sweetalert2";
 
 export default function Header() {
   const { user, logOut } = useAuth();
-
-  console.log(user);
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await logOut();
-      Swal.fire("Success", "Logout Successful", "success");
+      await logOut().then(() => {
+        navigate("/");
+        Swal.fire("Success", "Logout Successful", "success");
+      });
     } catch {
       Swal.fire("Error", "Logout Failed", "error");
     }
@@ -134,7 +135,9 @@ export default function Header() {
                 <div className="w-10 rounded-full">
                   <img
                     alt="Tailwind CSS Navbar component"
-                    src={user.photoURL}
+                    src={
+                      user.photoURL || "https://i.ibb.co.com/HBx04n5/images.jpg"
+                    }
                   />
                 </div>
               </div>
@@ -146,7 +149,7 @@ export default function Header() {
                   <a className="justify-between">{user.displayName}</a>
                 </li>
                 <li>
-                  <Link to={`/dashboard/${user.uid}`}>Dashboard</Link>
+                  <Link to={`/dashboard`}>Dashboard</Link>
                 </li>
                 <li>
                   <button onClick={handleLogout}>Logout</button>

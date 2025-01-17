@@ -3,7 +3,7 @@ import { FaSearch } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
 
-const ManageUsers = () => {
+export default function ManageUsers() {
   const axiosPublic = useAxiosPublic();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -15,10 +15,10 @@ const ManageUsers = () => {
   } = useQuery({
     queryKey: ["users", searchTerm], // Query key, includes search term
     queryFn: async () => {
-      const response = await axiosPublic.get(`/users`, {
+      const response = await axiosPublic.get("/users", {
         params: { search: searchTerm }, // Send search term as query param
       });
-      return response.data; // Return users data
+      return response.data;
     },
     keepPreviousData: true, // Retain previous data while fetching new data
   });
@@ -60,8 +60,8 @@ const ManageUsers = () => {
               </tr>
             </thead>
             <tbody>
-              {users.length > 0 ? (
-                users.map((user) => (
+              {users?.length > 0 ? (
+                users?.map((user) => (
                   <tr key={user._id}>
                     <td>{user.name}</td>
                     <td>{user.email}</td>
@@ -78,10 +78,18 @@ const ManageUsers = () => {
                     <td>
                       <span
                         className={`badge ${
-                          user.role ? "badge-success" : "badge-error"
+                          user.subscription === "Bronze"
+                            ? "badge-warning text-black"
+                            : user.subscription === "Silver"
+                            ? "badge-info"
+                            : user.subscription === "Gold"
+                            ? "badge-primary"
+                            : user.subscription === "Platinum"
+                            ? "badge-success"
+                            : "badge-error"
                         }`}
                       >
-                        {user.role ? "Subscribed" : "Not Subscribed"}
+                        {user.subscription || "Not Subscribed"}
                       </span>
                     </td>
                   </tr>
@@ -99,6 +107,4 @@ const ManageUsers = () => {
       )}
     </div>
   );
-};
-
-export default ManageUsers;
+}

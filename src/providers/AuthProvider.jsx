@@ -18,8 +18,6 @@ export default function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const axiosPublic = useAxiosPublic();
 
-  console.log(user);
-
   const provider = new GoogleAuthProvider();
 
   function createUser(email, password) {
@@ -74,13 +72,7 @@ export default function AuthProvider({ children }) {
       } else {
         localStorage.removeItem("accessToken");
 
-        axiosPublic.post(
-          `${import.meta.env.VITE_MAIN_URL}/logout`,
-          {},
-          {
-            withCredentials: true,
-          }
-        );
+        axiosPublic.post("/logout");
         setUser(null);
         setLoading(false);
       }
