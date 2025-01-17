@@ -8,7 +8,4 @@ export const useAxiosPublic = () =>
       authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
     withCredentials: true,
-    validateStatus: function (status) {
-      return status < 500;
-    },
   });
