@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useAxiosPublic } from "../Hooks/useAxiosPublic";
 
 export default function SignUp() {
   const { createUser, updateUser } = useAuth();
+  const axiosPublic = useAxiosPublic();
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -12,8 +14,9 @@ export default function SignUp() {
     const password = form.password.value;
 
     createUser(email, password).then(() => {
-      const user = { name };
+      const user = { name, level: "Bronze" };
 
+      //update on firebase
       updateUser(user)
         .then(() => {
           console.log("User updated successfully");
@@ -21,11 +24,23 @@ export default function SignUp() {
         .catch((error) => {
           console.error("Error updating user:", error);
         });
+
+      form.reset();
+
+      //update on backend
+      axiosPublic
+        .post("/users", user)
+        .then((res) => {
+          console.log(res.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     });
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F4F3F0]">
+    <div className="min-h-screen flex items-center justify-center bg-green-50">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
         <h1 className="text-3xl font-bold text-center text-[#331A15] mb-6">
           Sign Up
@@ -42,7 +57,7 @@ export default function SignUp() {
               type="text"
               id="name"
               placeholder="Enter your name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D2B48C]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             />
           </div>
           <div className="mb-4">
@@ -56,7 +71,7 @@ export default function SignUp() {
               type="email"
               id="email"
               placeholder="Enter your email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D2B48C]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             />
           </div>
           <div className="mb-6">
@@ -70,19 +85,19 @@ export default function SignUp() {
               type="password"
               id="password"
               placeholder="Create a password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D2B48C]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-[#D2B48C] text-white py-2 px-4 rounded-md hover:bg-[#b89c77] transition"
+            className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition"
           >
             Sign Up
           </button>
         </form>
         <p className="text-center text-sm text-gray-600 mt-4">
           Already have an account?{" "}
-          <Link to="/auth/login" className="text-[#D2B48C] hover:underline">
+          <Link to="/auth/login" className="text-green-600 hover:underline">
             Login
           </Link>
         </p>

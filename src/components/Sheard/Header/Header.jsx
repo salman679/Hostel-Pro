@@ -3,11 +3,15 @@ import logo from "../../../assets/logo-removebg-preview.png";
 
 export default function Header() {
   return (
-    <header className="container mx-auto px-10">
-      <div className="navbar bg-base-100 p-0">
+    <header className="container mx-auto px-4 lg:px-10">
+      <nav className="navbar bg-white p-0 shadow-lg">
         <div className="navbar-start">
           <div className="dropdown">
-            <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
+            <button
+              tabIndex={0}
+              className="btn btn-ghost lg:hidden"
+              aria-label="Open navigation menu"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
@@ -22,43 +26,71 @@ export default function Header() {
                   d="M4 6h16M4 12h8m-8 6h16"
                 />
               </svg>
-            </div>
+            </button>
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+              className="menu menu-sm dropdown-content bg-white rounded-box z-10 mt-3 w-52 p-2 shadow-lg"
             >
               <li>
-                <a>Home</a>
+                <Link to="/" className="text-green-600 hover:text-green-800">
+                  Home
+                </Link>
               </li>
               <li>
-                <a>Meals</a>
+                <Link
+                  to="/meals"
+                  className="text-green-600 hover:text-green-800"
+                >
+                  Meals
+                </Link>
               </li>
               <li>
-                <a>Upcoming Meals</a>
+                <Link
+                  to="/upcoming-meals"
+                  className="text-green-600 hover:text-green-800"
+                >
+                  Upcoming Meals
+                </Link>
               </li>
             </ul>
           </div>
-          <div className="text-xl max-w-32 max-h-32">
-            <Link to={"/"}>
-              <img className="" src={logo} alt="" />
+          <div className="text-xl">
+            <Link to="/">
+              <img
+                src={logo}
+                alt="Meal Management Logo"
+                className="max-w-24 lg:max-w-32"
+              />
             </Link>
           </div>
         </div>
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1">
             <li>
-              <a>Home</a>
+              <Link to="/" className="text-green-600 hover:text-green-800">
+                Home
+              </Link>
             </li>
             <li>
-              <a>Meals</a>
+              <Link to="/meals" className="text-green-600 hover:text-green-800">
+                Meals
+              </Link>
             </li>
             <li>
-              <a>Upcoming Meals</a>
+              <Link
+                to="/upcoming-meals"
+                className="text-green-600 hover:text-green-800"
+              >
+                Upcoming Meals
+              </Link>
             </li>
           </ul>
         </div>
-        <div className="navbar-end">
-          <button className="btn btn-ghost btn-circle mr-3">
+        <div className="navbar-end flex items-center">
+          <button
+            className="btn btn-ghost btn-circle mr-3"
+            aria-label="Notifications"
+          >
             <div className="indicator">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -77,11 +109,13 @@ export default function Header() {
               <span className="badge badge-xs badge-primary indicator-item"></span>
             </div>
           </button>
-          <button className="btn bg-yellow-400 hover:bg-yellow-500">
-            Join Us
-          </button>
+          <Link to="/auth/login">
+            <button className="btn bg-green-600 hover:bg-green-700 text-white">
+              Join Us
+            </button>
+          </Link>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }

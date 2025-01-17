@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Login() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F4F3F0]">
+    <div className="min-h-screen flex items-center justify-center bg-green-50">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
         <h1 className="text-3xl font-bold text-center text-[#331A15] mb-6">
           Login
@@ -19,7 +19,7 @@ export default function Login() {
               type="email"
               id="email"
               placeholder="Enter your email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D2B48C]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             />
           </div>
           <div className="mb-6">
@@ -33,19 +33,19 @@ export default function Login() {
               type="password"
               id="password"
               placeholder="Enter your password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D2B48C]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-[#D2B48C] text-white py-2 px-4 rounded-md hover:bg-[#b89c77] transition"
+            className="w-full bg-green-600 ring-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition"
           >
             Login
           </button>
         </form>
         <p className="text-center text-sm text-gray-600 mt-4">
           Don&apos;t have an account?{" "}
-          <Link to={"/auth/signup"} className="text-[#D2B48C] hover:underline">
+          <Link to={"/auth/signup"} className="text-green-600 hover:underline">
             Sign Up
           </Link>
         </p>
