@@ -1,45 +1,33 @@
 import { useState } from "react";
-import { FaSearch } from "react-icons/fa"; // React Icons for search icon
+import { FaSearch } from "react-icons/fa";
+import { useQuery } from "@tanstack/react-query";
+import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
 
 const ManageUsers = () => {
-  // Sample user data (replace with actual data fetched from your server)
-  const users = [
-    {
-      id: 1,
-      username: "john_doe",
-      email: "john@example.com",
-      isAdmin: false,
-      isSubscribed: true,
-    },
-    {
-      id: 2,
-      username: "jane_doe",
-      email: "jane@example.com",
-      isAdmin: false,
-      isSubscribed: false,
-    },
-    {
-      id: 3,
-      username: "alex_smith",
-      email: "alex@example.com",
-      isAdmin: true,
-      isSubscribed: true,
-    },
-  ];
-
+  const axiosPublic = useAxiosPublic();
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Function to handle search input change
+  // Fetch users using TanStack Query v5
+  const {
+    data: users = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["users", searchTerm], // Query key, includes search term
+    queryFn: async () => {
+      const response = await axiosPublic.get(`/users`, {
+        params: { search: searchTerm }, // Send search term as query param
+      });
+      return response.data; // Return users data
+    },
+    keepPreviousData: true, // Retain previous data while fetching new data
+  });
+
+  // Handle search input change
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    refetch(); // Refetch data on search term change
   };
-
-  // Filter users based on searchTerm
-  const filteredUsers = users.filter(
-    (user) =>
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="p-6">
@@ -57,46 +45,58 @@ const ManageUsers = () => {
         </div>
       </div>
 
-      {/* User Table */}
-      <div className="overflow-x-auto">
-        <table className="table w-full">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Make Admin</th>
-              <th>Subscription Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user.id}>
-                <td>{user.username}</td>
-                <td>{user.email}</td>
-                <td>
-                  <button
-                    className={`btn btn-sm ${
-                      user.isAdmin ? "btn-disabled" : "btn-primary"
-                    }`}
-                    disabled={user.isAdmin}
-                  >
-                    {user.isAdmin ? "Admin" : "Make Admin"}
-                  </button>
-                </td>
-                <td>
-                  <span
-                    className={`badge ${
-                      user.isSubscribed ? "badge-success" : "badge-error"
-                    }`}
-                  >
-                    {user.isSubscribed ? "Subscribed" : "Not Subscribed"}
-                  </span>
-                </td>
+      {/* Loading Indicator */}
+      {isLoading ? (
+        <p>Loading users...</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="table w-full">
+            <thead>
+              <tr>
+                <th>name</th>
+                <th>Email</th>
+                <th>Make Admin</th>
+                <th>Subscription Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <tr key={user._id}>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <button
+                        className={`btn btn-sm ${
+                          user.role === "admin" ? "btn-disabled" : "btn-primary"
+                        }`}
+                        disabled={user.role === "admin"}
+                      >
+                        {user.role === "admin" ? "Admin" : "Make Admin"}
+                      </button>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          user.role ? "badge-success" : "badge-error"
+                        }`}
+                      >
+                        {user.role ? "Subscribed" : "Not Subscribed"}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="text-center">
+                    No users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

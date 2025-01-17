@@ -10,11 +10,13 @@ import AllMeals from "../components/Dashboard/AllMeals";
 import AllReviews from "../components/Dashboard/AllReviews";
 import UpcomingMeals from "../components/Dashboard/UpcomingMeals";
 import DashboardLayout from "../layouts/Dashboard";
+import ErrorPage from "../pages/ErrorPage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Main />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "/",

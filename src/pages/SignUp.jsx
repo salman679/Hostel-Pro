@@ -32,7 +32,8 @@ export default function SignUp() {
             const newUser = {
               name,
               email,
-              role: "Bronze",
+              role: "user",
+              subscription: "Bronze",
               createdAt: new Date(),
               updatedAt: new Date(),
             };

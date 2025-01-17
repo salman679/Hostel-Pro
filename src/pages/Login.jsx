@@ -57,7 +57,8 @@ export default function Login() {
           .post("/users", {
             name: res.user.displayName,
             email: res.user.email,
-            role: "Bronze",
+            role: "user",
+            subscription: "Bronze",
             createdAt: new Date(),
             updatedAt: new Date(),
           })
