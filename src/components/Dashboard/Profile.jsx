@@ -1,26 +1,26 @@
-const AdminProfile = () => {
-  // Sample data for admin profile (replace with actual data from state or props)
-  const adminData = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    mealsAdded: 25,
-    image: "https://via.placeholder.com/150", // Sample image URL
-  };
+import { useAuth } from "../../contexts/AuthContext";
+
+export default function AdminProfile() {
+  const { user } = useAuth();
+
+  //TODO: Add admin stats
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
       <div className="flex items-center space-x-4">
         {/* Admin Profile Image */}
-        <img
-          src={adminData.image}
-          alt="Admin Profile"
-          className="w-16 h-16 rounded-full border-2 border-gray-300"
-        />
+        <div className="w-16 h-16">
+          <img
+            src={user?.photoURL || "https://i.ibb.co.com/HBx04n5/images.jpg"}
+            alt="Admin Profile"
+            className="w-full h-full rounded-full border-2 border-gray-300"
+          />
+        </div>
         <div>
           <h2 className="text-xl font-semibold text-gray-800">
-            {adminData.name}
+            {user?.displayName}
           </h2>
-          <p className="text-sm text-gray-500">{adminData.email}</p>
+          <p className="text-sm text-gray-500">{user?.email}</p>
         </div>
       </div>
 
@@ -29,12 +29,10 @@ const AdminProfile = () => {
         <ul className="mt-3 text-gray-600">
           <li className="flex justify-between">
             <span className="font-semibold">Meals Added:</span>
-            <span>{adminData.mealsAdded}</span>
+            {/* <span>{}</span> */}
           </li>
         </ul>
       </div>
     </div>
   );
-};
-
-export default AdminProfile;
+}

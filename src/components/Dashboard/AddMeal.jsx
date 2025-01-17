@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios"; // Axios for API calls
+import { useAuth } from "../../contexts/AuthContext";
 
-const AddMeal = () => {
+export default function AddMeal() {
   const {
     register,
     handleSubmit,
@@ -10,6 +11,7 @@ const AddMeal = () => {
   } = useForm();
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   // Handle form submission
   const onSubmit = async (data) => {
@@ -184,7 +186,8 @@ const AddMeal = () => {
             <input
               type="text"
               id="distributorName"
-              // value={adminName}
+              {...register("distributorName")}
+              value={user.displayName || user.name}
               readOnly
               className="input input-bordered w-full mt-2"
             />
@@ -196,8 +199,9 @@ const AddMeal = () => {
             </label>
             <input
               type="email"
+              {...register("distributorEmail")}
               id="distributorEmail"
-              // value={adminEmail}
+              value={user.email}
               readOnly
               className="input input-bordered w-full mt-2"
             />
@@ -214,6 +218,10 @@ const AddMeal = () => {
               type="number"
               id="rating"
               value="0"
+              step="0.1"
+              min="0"
+              max="5"
+              {...register("rating")}
               readOnly
               className="input input-bordered w-full mt-2"
             />
@@ -227,6 +235,7 @@ const AddMeal = () => {
               type="number"
               id="likes"
               value="0"
+              {...register("likes")}
               readOnly
               className="input input-bordered w-full mt-2"
             />
@@ -242,6 +251,7 @@ const AddMeal = () => {
             type="number"
             id="reviewsCount"
             value="0"
+            {...register("reviewsCount")}
             readOnly
             className="input input-bordered w-full mt-2"
           />
@@ -256,6 +266,4 @@ const AddMeal = () => {
       </form>
     </div>
   );
-};
-
-export default AddMeal;
+}
