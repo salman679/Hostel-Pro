@@ -6,77 +6,90 @@ import Swal from "sweetalert2";
 export default function SignUp() {
   const { createUser, updateUser, signInWithGoogle } = useAuth();
   const axiosPublic = useAxiosPublic();
-
   const navigate = useNavigate();
 
   function handleSubmit(event) {
     event.preventDefault();
     const form = event.target;
-    const name = form.name.value;
-    const email = form.email.value;
-    const password = form.password.value;
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const password = form.password.value.trim();
 
-    createUser(email, password).then(() => {
-      //update on firebase
-      updateUser(user)
-        .then(() => {
-          console.log("User updated successfully");
-        })
-        .catch((error) => {
-          console.error("Error updating user:", error);
-        });
+    if (!name || !email || !password) {
+      Swal.fire("Error", "All fields are required", "error");
+      return;
+    }
 
-      form.reset();
+    createUser(email, password)
+      .then(() => {
+        const user = { name };
+        // Update on Firebase
+        updateUser(user)
+          .then(() => {
+            console.log("User updated successfully");
 
-      //update on backend
-      const user = {
-        name,
-        email,
-        role: "Bronze",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      axiosPublic
-        .post("/users", user)
-        .then((res) => {
-          if (res.data.insertedId) {
-            Swal.fire("Success", "User added successfully", "success");
-            navigate("/auth/login");
-          }
-        })
-        .catch((error) => {
-          console.error("Error adding user:", error);
-        });
-    });
+            // Update on backend
+            const newUser = {
+              name,
+              email,
+              role: "Bronze",
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+
+            axiosPublic
+              .post("/users", newUser)
+              .then((res) => {
+                if (res.data.insertedId) {
+                  Swal.fire("Success", "User added successfully", "success");
+                  form.reset();
+                  navigate("/");
+                }
+              })
+              .catch((error) => {
+                console.error("Error adding user:", error);
+              });
+          })
+          .catch((error) => {
+            console.error("Error updating user:", error);
+          });
+      })
+      .catch((error) => {
+        Swal.fire("Error", error.message, "error");
+      });
   }
 
   async function handleGoogleLogin() {
     try {
-      signInWithGoogle().then((result) => {
-        //update on backend
-        const user = {
-          name: result.user.displayName,
-          email: result.user.email,
-          role: "Bronze",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        axiosPublic
-          .post("/users", user)
-          .then((res) => {
-            if (res.data.insertedId) {
-              Swal.fire("Success", "User added successfully", "success");
-            }
-          })
-          .catch((error) => {
-            console.error("Error adding user:", error);
-          });
+      signInWithGoogle()
+        .then((result) => {
+          const user = {
+            name: result.user.displayName,
+            email: result.user.email,
+            role: "Bronze",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
 
-        Swal.fire("Success", "Login Successful", "success");
-        navigate("/");
-      });
+          axiosPublic
+            .post("/users", user)
+            .then((res) => {
+              if (res.data.insertedId) {
+                Swal.fire("Success", "User added successfully", "success");
+              }
+            })
+            .catch((error) => {
+              console.error("Error adding user:", error);
+            });
+
+          Swal.fire("Success", "Login Successful", "success");
+          navigate("/");
+        })
+        .catch((error) => {
+          Swal.fire("Error", error.message, "error");
+        });
     } catch (error) {
-      Swal.fire("Error", error.message, "error");
+      console.error("Error during Google login:", error);
     }
   }
 
@@ -97,6 +110,7 @@ export default function SignUp() {
             <input
               type="text"
               id="name"
+              name="name"
               placeholder="Enter your name"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             />
@@ -111,6 +125,7 @@ export default function SignUp() {
             <input
               type="email"
               id="email"
+              name="email"
               placeholder="Enter your email"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             />
@@ -125,6 +140,7 @@ export default function SignUp() {
             <input
               type="password"
               id="password"
+              name="password"
               placeholder="Create a password"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             />

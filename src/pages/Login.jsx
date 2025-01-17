@@ -35,7 +35,7 @@ export default function Login() {
           timer: 1500,
         });
 
-        navigate("/home");
+        navigate("/");
         e.target.reset();
       })
       .catch((error) => {

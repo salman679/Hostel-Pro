@@ -6,6 +6,8 @@ import Swal from "sweetalert2";
 export default function Header() {
   const { user, logOut } = useAuth();
 
+  console.log(user);
+
   const handleLogout = async () => {
     try {
       await logOut();

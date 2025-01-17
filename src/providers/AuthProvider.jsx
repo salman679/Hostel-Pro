@@ -32,7 +32,7 @@ export default function AuthProvider({ children }) {
     });
   }
 
-  function login() {
+  function login(user) {
     setLoading(true);
     return signInWithEmailAndPassword(Auth, user.email, user.password);
   }
