@@ -11,6 +11,8 @@ import AllReviews from "../components/Dashboard/AllReviews";
 import UpcomingMeals from "../components/Dashboard/UpcomingMeals";
 import DashboardLayout from "../layouts/Dashboard";
 import ErrorPage from "../pages/ErrorPage";
+import PrivateRoute from "./PrivateRoute";
+import AdminRoute from "./AdminRoute";
 
 export const router = createBrowserRouter([
   {
@@ -37,7 +39,13 @@ export const router = createBrowserRouter([
       },
       {
         path: "dashboard",
-        element: <DashboardLayout />,
+        element: (
+          <PrivateRoute>
+            <AdminRoute>
+              <DashboardLayout />
+            </AdminRoute>
+          </PrivateRoute>
+        ),
         children: [
           {
             path: "/dashboard",

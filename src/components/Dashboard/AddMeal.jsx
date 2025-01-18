@@ -1,26 +1,53 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios"; // Axios for API calls
 import { useAuth } from "../../contexts/AuthContext";
+import axios from "axios";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
+import Swal from "sweetalert2";
 
 export default function AddMeal() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm();
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
 
   // Handle form submission
   const onSubmit = async (data) => {
     console.log("Meal Data:", data);
-    // You can send the form data to your server here
+
+    try {
+      await axiosSecure
+        .post("/meals", {
+          ...data,
+          image: imageUrl,
+          likes: 0,
+          retting: 0,
+          reviews: [],
+        })
+        .then((res) => {
+          if (res.data.insertedId) {
+            Swal.fire("Success", "Meal added successfully", "success");
+            reset();
+          }
+        })
+        .catch((error) => {
+          console.error("Error adding meal:", error);
+        });
+    } catch (error) {
+      console.error("Error adding meal:", error);
+    }
   };
 
   // Handle image upload to ImageBB
   const handleImageUpload = async (event) => {
+    event.preventDefault();
+
     const file = event.target.files[0];
     const formData = new FormData();
     formData.append("image", file);
@@ -28,7 +55,7 @@ export default function AddMeal() {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://api.imgbb.com/1/upload?key=YOUR_API_KEY",
+        "https://api.imgbb.com/1/upload?key=6e8387872b8e8827b2a1b18c44181ca6",
         formData
       );
       setImageUrl(response.data.data.url);
@@ -90,9 +117,15 @@ export default function AddMeal() {
           <label className="block text-gray-700">Meal Image</label>
           <input
             type="file"
+            accept="image/*"
+            id="image"
+            {...register("image", { required: "Image is required" })}
             onChange={handleImageUpload}
             className="file-input file-input-bordered w-full mt-2"
           />
+          {errors.image && (
+            <span className="text-red-500 text-sm">{errors.image.message}</span>
+          )}
           {loading && <p>Uploading...</p>}
           {imageUrl && (
             <img src={imageUrl} alt="Meal" className="mt-4 max-w-xs" />
@@ -158,23 +191,6 @@ export default function AddMeal() {
               </span>
             )}
           </div>
-
-          <div>
-            <label htmlFor="postTime" className="block text-gray-700">
-              Post Time
-            </label>
-            <input
-              type="datetime-local"
-              id="postTime"
-              {...register("postTime", { required: "Post time is required" })}
-              className="input input-bordered w-full mt-2"
-            />
-            {errors.postTime && (
-              <span className="text-red-500 text-sm">
-                {errors.postTime.message}
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Distributor Name and Email */}
@@ -187,7 +203,7 @@ export default function AddMeal() {
               type="text"
               id="distributorName"
               {...register("distributorName")}
-              value={user.displayName || user.name}
+              value={user?.displayName || user?.name}
               readOnly
               className="input input-bordered w-full mt-2"
             />
@@ -201,60 +217,11 @@ export default function AddMeal() {
               type="email"
               {...register("distributorEmail")}
               id="distributorEmail"
-              value={user.email}
+              value={user?.email}
               readOnly
               className="input input-bordered w-full mt-2"
             />
           </div>
-        </div>
-
-        {/* Initial Rating and Likes */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label htmlFor="rating" className="block text-gray-700">
-              Rating
-            </label>
-            <input
-              type="number"
-              id="rating"
-              value="0"
-              step="0.1"
-              min="0"
-              max="5"
-              {...register("rating")}
-              readOnly
-              className="input input-bordered w-full mt-2"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="likes" className="block text-gray-700">
-              Likes
-            </label>
-            <input
-              type="number"
-              id="likes"
-              value="0"
-              {...register("likes")}
-              readOnly
-              className="input input-bordered w-full mt-2"
-            />
-          </div>
-        </div>
-
-        {/* Reviews Count */}
-        <div className="mb-4">
-          <label htmlFor="reviewsCount" className="block text-gray-700">
-            Reviews Count
-          </label>
-          <input
-            type="number"
-            id="reviewsCount"
-            value="0"
-            {...register("reviewsCount")}
-            readOnly
-            className="input input-bordered w-full mt-2"
-          />
         </div>
 
         {/* Submit Button */}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
+import Swal from "sweetalert2";
 
 export default function ManageUsers() {
   const axiosPublic = useAxiosPublic();
@@ -20,13 +21,35 @@ export default function ManageUsers() {
       });
       return response.data;
     },
-    keepPreviousData: true, // Retain previous data while fetching new data
   });
 
   // Handle search input change
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     refetch(); // Refetch data on search term change
+  };
+
+  // Handle making a user an admin
+  const handleMakeAdmin = async (userId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to make this user an admin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, make admin!",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const response = await axiosPublic.patch(`/users/admin/${userId}`);
+        if (response.data.modifiedCount > 0) {
+          Swal.fire("Success", "User made admin successfully", "success");
+
+          refetch(); // Refetch data after making user an admin
+        }
+      }
+    });
   };
 
   return (
@@ -47,7 +70,9 @@ export default function ManageUsers() {
 
       {/* Loading Indicator */}
       {isLoading ? (
-        <p>Loading users...</p>
+        <div className="flex justify-center items-center">
+          <span className="loading loading-dots loading-lg"></span>
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="table w-full">
@@ -71,6 +96,7 @@ export default function ManageUsers() {
                           user.role === "admin" ? "btn-disabled" : "btn-primary"
                         }`}
                         disabled={user.role === "admin"}
+                        onClick={() => handleMakeAdmin(user._id)}
                       >
                         {user.role === "admin" ? "Admin" : "Make Admin"}
                       </button>
