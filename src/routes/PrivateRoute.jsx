@@ -1,9 +1,11 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import PropTypes from "prop-types";
 
 export default function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
+
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -17,7 +19,7 @@ export default function PrivateRoute({ children }) {
     return children;
   }
 
-  return <Navigate to="/auth/login" />;
+  return <Navigate to="/auth/login" state={{ from: location }} replace />;
 }
 
 // Correct PropTypes definition

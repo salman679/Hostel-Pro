@@ -2,11 +2,13 @@ import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
+import useAxiosSecure from "../../Hooks/useAxiosSecure.jsx";
 import Swal from "sweetalert2";
 
 export default function ManageUsers() {
   const axiosPublic = useAxiosPublic();
   const [searchTerm, setSearchTerm] = useState("");
+  const axiosSecure = useAxiosSecure();
 
   // Fetch users using TanStack Query v5
   const {
@@ -14,9 +16,9 @@ export default function ManageUsers() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["users", searchTerm], // Query key, includes search term
+    queryKey: ["users", searchTerm],
     queryFn: async () => {
-      const response = await axiosPublic.get("/users", {
+      const response = await axiosSecure.get("/users", {
         params: { search: searchTerm }, // Send search term as query param
       });
       return response.data;

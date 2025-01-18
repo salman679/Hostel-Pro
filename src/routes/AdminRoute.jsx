@@ -3,8 +3,8 @@ import useAdmin from "../Hooks/useAdmin";
 import PropTypes from "prop-types";
 import { useAuth } from "../contexts/AuthContext";
 
-const AdminRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+export default function AdminRoute({ children }) {
+  const { user, loading, logOut } = useAuth();
   const [isAdmin, isAdminLoading] = useAdmin();
   const location = useLocation();
 
@@ -20,10 +20,12 @@ const AdminRoute = ({ children }) => {
     return children;
   }
 
-  return <Navigate to="/" state={{ from: location }} replace></Navigate>;
-};
+  if (user && !isAdmin) {
+    logOut();
+  }
 
-export default AdminRoute;
+  return <Navigate to="/" state={{ from: location }} replace></Navigate>;
+}
 
 AdminRoute.propTypes = {
   children: PropTypes.node,

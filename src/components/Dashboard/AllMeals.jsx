@@ -1,31 +1,19 @@
-import { useEffect, useState, useCallback } from "react";
-import axios from "axios"; // Assuming you are using axios to make API calls
+import { useState } from "react";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
-const AllMeals = () => {
-  const [meals, setMeals] = useState([]); // Initialize meals as an empty array
-  const [sortBy, setSortBy] = useState("likes"); // Default sort by likes
+export default function AllMeals() {
+  const [sortBy, setSortBy] = useState("likes");
+  const axiosSecure = useAxiosSecure();
 
-  // Fetch meals from server using useCallback to avoid unnecessary re-creations
-  const fetchMeals = useCallback(async () => {
-    try {
-      const response = await axios.get(`/api/meals?sortBy=${sortBy}`);
-      // Ensure that the response is an array
-      setMeals(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching meals:", error);
-      setMeals([]); // Set to empty array in case of error
-    }
-  }, [sortBy]); // Re-fetch when `sortBy` changes
-
-  // Fetch meals initially or when sortBy changes
-  useEffect(() => {
-    fetchMeals();
-  }, [fetchMeals]); // Run fetchMeals whenever it changes
-
-  // Handle sorting
-  const handleSort = (field) => {
-    setSortBy(field);
-  };
+  const { data: meals = [] } = useQuery({
+    queryKey: ["meals", sortBy],
+    queryFn: async () => {
+      const response = await axiosSecure.get("/meals", { params: { sortBy } });
+      return response.data;
+    },
+  });
 
   const handleUpdate = (mealId) => {
     // Navigate to the update page or open a modal to update the meal
@@ -35,7 +23,6 @@ const AllMeals = () => {
   const handleDelete = async (mealId) => {
     try {
       await axios.delete(`/api/meals/${mealId}`);
-      fetchMeals(); // Re-fetch meals after deletion
     } catch (error) {
       console.error("Error deleting meal:", error);
     }
@@ -53,7 +40,7 @@ const AllMeals = () => {
       {/* Sorting Controls */}
       <div className="mb-4">
         <button
-          onClick={() => handleSort("likes")}
+          onClick={() => setSortBy("likes")}
           className={`btn ${
             sortBy === "likes" ? "btn-primary" : "btn-secondary"
           } mr-4`}
@@ -61,7 +48,7 @@ const AllMeals = () => {
           Sort by Likes
         </button>
         <button
-          onClick={() => handleSort("reviews_count")}
+          onClick={() => setSortBy("reviews_count")}
           className={`btn ${
             sortBy === "reviews_count" ? "btn-primary" : "btn-secondary"
           }`}
@@ -91,15 +78,15 @@ const AllMeals = () => {
             </tr>
           ) : (
             meals.map((meal) => (
-              <tr key={meal.id}>
+              <tr key={meal._id}>
                 <td>{meal.title}</td>
                 <td>{meal.likes}</td>
-                <td>{meal.reviews_count}</td>
-                <td>{meal.rating}</td>
-                <td>{meal.distributor_name}</td>
+                <td>{meal.reviews?.length}</td>
+                <td>{meal.retting}</td>
+                <td>{meal.distributorName}</td>
                 <td>
                   <button
-                    onClick={() => handleView(meal.id)}
+                    onClick={() => handleView(meal._id)}
                     className="btn btn-info btn-sm mr-2"
                   >
                     View
@@ -124,6 +111,4 @@ const AllMeals = () => {
       </table>
     </div>
   );
-};
-
-export default AllMeals;
+}
