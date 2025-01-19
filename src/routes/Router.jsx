@@ -13,6 +13,7 @@ import DashboardLayout from "../layouts/Dashboard";
 import ErrorPage from "../pages/ErrorPage";
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
+import MealDetail from "../components/Meals/Details";
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +24,15 @@ export const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+        path: "meals",
+        children: [
+          {
+            path: ":id",
+            element: <MealDetail />,
+          },
+        ],
       },
       {
         path: "auth",

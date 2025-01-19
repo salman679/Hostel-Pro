@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Rating from "react-rating-stars-component";
-import { useAxiosPublic } from "../../Hooks/useAxiosPublic"; // Custom axios hook
-import { useAuth } from "../../Hooks/useAuth"; // Custom authentication hook
-import Swal from "sweetalert2"; // SweetAlert2 import
+import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
+import Swal from "sweetalert2";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function MealDetail() {
   const [reviewText, setReviewText] = useState("");
@@ -13,15 +13,18 @@ export default function MealDetail() {
   const { id } = useParams();
   // const navigate = useNavigate();
   const axiosPublic = useAxiosPublic();
-  const { user } = useAuth(); // Custom hook to fetch user info (e.g., logged-in status)
+  const { user } = useAuth();
 
   const {
     data: meal,
     isLoading,
     isError,
-  } = useQuery(["mealDetails", id], async () => {
-    const response = await axiosPublic.get(`/meals/${id}`);
-    return response.data;
+  } = useQuery({
+    queryKey: ["mealDetails", id],
+    queryFn: async () => {
+      const response = await axiosPublic.get(`/meals/${id}`);
+      return response.data;
+    },
   });
 
   const handleLike = async () => {
@@ -34,8 +37,11 @@ export default function MealDetail() {
       return;
     }
     try {
-      const updatedMeal = await axiosPublic.patch(`/meals/${id}/like`);
-      setLikeCount(updatedMeal.data.likes);
+      setLikeCount(likeCount + 1);
+      await axiosPublic.patch(`/meals/${id}/like`, {
+        likes: likeCount + 1,
+      });
+
       Swal.fire({
         icon: "success",
         title: "Liked",
@@ -59,7 +65,7 @@ export default function MealDetail() {
       });
       return;
     }
-    if (!user.subscriptionPackage) {
+    if (!user.subscription) {
       Swal.fire({
         icon: "warning",
         title: "Subscription Required",
@@ -79,7 +85,7 @@ export default function MealDetail() {
         title: "Request Sent",
         text: "Your meal request has been submitted. You will be notified once it’s processed.",
       });
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -108,7 +114,7 @@ export default function MealDetail() {
         title: "Review Submitted",
         text: "Thank you for your review!",
       });
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -145,15 +151,13 @@ export default function MealDetail() {
           <h1 className="text-4xl font-bold">{meal.title}</h1>
           <p className="text-lg text-gray-700 mt-4">{meal.description}</p>
           <p className="mt-2">
-            <span className="font-bold">Distributor:</span> {meal.distributor}
+            <span className="font-bold">Distributor:</span>{" "}
+            {meal.distributorName}
           </p>
           <p className="mt-2">
             <span className="font-bold">Post Time:</span> {meal.postTime}
           </p>
-          <p className="mt-2">
-            <span className="font-bold">Ingredients:</span>{" "}
-            {meal.ingredients.join(", ")}
-          </p>
+          <p>Ingredients: {meal.ingredients}</p>
 
           {/* Rating */}
           <div className="flex items-center mt-4">

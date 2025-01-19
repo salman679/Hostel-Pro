@@ -86,7 +86,7 @@ export default function MealsByCategory() {
                 <div className="card-actions justify-end">
                   <button
                     className="btn btn-primary"
-                    onClick={() => navigate(`/meal/${meal._id}`)}
+                    onClick={() => navigate(`/meals/${meal._id}`)}
                   >
                     Details
                   </button>
