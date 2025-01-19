@@ -14,6 +14,7 @@ import ErrorPage from "../pages/ErrorPage";
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
 import MealDetail from "../components/Meals/Details";
+import MealsPage from "../components/Meals/AllMeals";
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ export const router = createBrowserRouter([
       {
         path: "meals",
         children: [
+          {
+            path: "",
+            element: <MealsPage />,
+          },
           {
             path: ":id",
             element: <MealDetail />,
