@@ -15,6 +15,7 @@ import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
 import MealDetail from "../components/Meals/Details";
 import MealsPage from "../components/Meals/AllMeals";
+import Payment from "../components/payment/Payment";
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
             element: <MealDetail />,
           },
         ],
+      },
+      {
+        path: "checkout/:id",
+        element: <Payment />,
       },
       {
         path: "auth",
