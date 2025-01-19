@@ -2,17 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Rating from "react-rating-stars-component";
-import axios from "axios";
+import { useAxiosPublic } from "../../Hooks/useAxiosPublic"; // Custom axios hook
 
-const MealsByCategory = () => {
+export default function MealsByCategory() {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const axiosPublic = useAxiosPublic();
   const navigate = useNavigate();
-
-  // Fetch meals using TanStack Query
-  const fetchMeals = async (category) => {
-    const { data } = await axios.get(`/meals?category=${category}`);
-    return data;
-  };
 
   const {
     data: meals = [],
@@ -20,7 +15,17 @@ const MealsByCategory = () => {
     isError,
   } = useQuery({
     queryKey: ["meals", selectedCategory],
-    queryFn: () => fetchMeals(selectedCategory),
+    queryFn: async () => {
+      try {
+        const response = await axiosPublic.get(
+          `/meals/category/${selectedCategory}`
+        );
+        return response.data || [];
+      } catch (error) {
+        console.error("Error fetching meals:", error);
+        return [];
+      }
+    },
   });
 
   const handleTabChange = (category) => {
@@ -54,7 +59,7 @@ const MealsByCategory = () => {
 
       {/* Meal Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        {meals?.map((meal) => (
+        {meals?.slice(0, 3).map((meal) => (
           <div key={meal._id} className="card shadow-xl">
             <figure>
               <img src={meal.image} alt={meal.title} className="rounded-xl" />
@@ -67,7 +72,7 @@ const MealsByCategory = () => {
                 <Rating
                   count={5}
                   size={24}
-                  value={meal.rating || 0}
+                  value={parseInt(meal.rating) || 0}
                   edit={false}
                   activeColor="#ffd700"
                 />
@@ -89,6 +94,4 @@ const MealsByCategory = () => {
       </div>
     </div>
   );
-};
-
-export default MealsByCategory;
+}

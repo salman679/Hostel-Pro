@@ -1,37 +1,32 @@
-import { useEffect, useState, useCallback } from "react";
-import axios from "axios"; // Assuming you are using axios to make API calls
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 const AllReviews = () => {
-  const [reviews, setReviews] = useState([]);
   const [sortBy, setSortBy] = useState("likes"); // Default sort by likes
 
-  // Fetch reviews from server
-  const fetchReviews = useCallback(async () => {
-    try {
-      const response = await axios.get(`/api/reviews?sortBy=${sortBy}`);
-      setReviews(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-      setReviews([]); // Set to empty array in case of error
-    }
-  }, [sortBy]);
-
-  useEffect(() => {
-    fetchReviews();
-  }, [fetchReviews]);
+  // Use TanStack Query to fetch reviews
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["reviews", sortBy],
+    queryFn: async (sortBy) => {
+      try {
+        const response = await axios.get(`/meals/reviews?sortBy=${sortBy}`);
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+        return []; // Return empty array in case of error
+      }
+    },
+  });
 
   // Handle sorting
   const handleSort = (field) => {
     setSortBy(field);
   };
 
-  const handleDelete = async (reviewId) => {
-    try {
-      await axios.delete(`/api/reviews/${reviewId}`);
-      fetchReviews(); // Re-fetch reviews after deletion
-    } catch (error) {
-      console.error("Error deleting review:", error);
-    }
+  const handleDelete = (reviewId) => {
+    // Handle review deletion
+    console.log(`Delete review with ID: ${reviewId}`);
   };
 
   const handleView = (reviewId) => {
@@ -63,30 +58,18 @@ const AllReviews = () => {
         </button>
       </div>
 
-      {/* Reviews Table */}
-      <table className="table w-full">
-        <thead>
-          <tr>
-            <th>Meal Title</th>
-            <th>Likes</th>
-            <th>Reviews Count</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reviews.length === 0 ? (
-            <tr>
-              <td colSpan="4" className="text-center">
-                No reviews available
-              </td>
-            </tr>
-          ) : (
-            reviews.map((review) => (
-              <tr key={review.id}>
-                <td>{review.meal_title}</td>
-                <td>{review.likes}</td>
-                <td>{review.reviews_count}</td>
-                <td>
+      {/* Reviews List with DaisyUI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {reviews.length === 0 ? (
+          <div className="text-center col-span-full">No reviews available</div>
+        ) : (
+          reviews.map((review) => (
+            <div key={review.id} className="card w-full bg-base-100 shadow-xl">
+              <div className="card-body">
+                <h3 className="card-title">{review.meal_title}</h3>
+                <p className="text-lg">Likes: {review.likes}</p>
+                <p className="text-lg">Reviews Count: {review.reviews_count}</p>
+                <div className="card-actions justify-end">
                   <button
                     onClick={() => handleView(review.id)}
                     className="btn btn-info btn-sm mr-2"
@@ -99,12 +82,12 @@ const AllReviews = () => {
                   >
                     Delete
                   </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 };

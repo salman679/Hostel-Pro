@@ -27,7 +27,7 @@ export default function AddMeal() {
           ...data,
           image: imageUrl,
           likes: 0,
-          retting: 0,
+          ratting: 0,
           reviews: [],
         })
         .then((res) => {

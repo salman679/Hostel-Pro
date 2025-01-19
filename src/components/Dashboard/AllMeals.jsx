@@ -1,13 +1,17 @@
 import { useState } from "react";
-import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
+import Swal from "sweetalert2";
+// import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 export default function AllMeals() {
   const [sortBy, setSortBy] = useState("likes");
+  const [mealToUpdate, setMealToUpdate] = useState(null);
   const axiosSecure = useAxiosSecure();
+  // const navigate = useNavigate();
 
-  const { data: meals = [] } = useQuery({
+  const { data: meals = [], refetch } = useQuery({
     queryKey: ["meals", sortBy],
     queryFn: async () => {
       const response = await axiosSecure.get("/meals", { params: { sortBy } });
@@ -15,17 +19,67 @@ export default function AllMeals() {
     },
   });
 
-  const handleUpdate = (mealId) => {
-    // Navigate to the update page or open a modal to update the meal
-    console.log(`Update meal with ID: ${mealId}`);
+  // React Hook Form setup
+  const { register, handleSubmit, setValue, reset } = useForm();
+
+  const handleUpdate = (meal) => {
+    setMealToUpdate(meal);
+    setValue("title", meal.title);
+    setValue("likes", meal.likes);
+    setValue("rating", meal.rating);
+    setValue("distributorName", meal.distributorName);
+  };
+
+  const handleUpdateSubmit = async (data) => {
+    try {
+      const res = await axiosSecure.put(`/meals/${mealToUpdate._id}`, data);
+      if (res.data.updatedMeal) {
+        Swal.fire("Updated!", "Your meal has been updated.", "success");
+        setMealToUpdate(null);
+        reset(); // Reset the form after successful update
+        refetch(); // Re-fetch meals after update
+      } else {
+        Swal.fire("Error!", "Meal could not be updated.", "error");
+      }
+    } catch (error) {
+      Swal.fire(
+        "Error!",
+        "An error occurred while updating the meal.",
+        "error"
+      );
+      console.error("Error updating meal:", error);
+    }
   };
 
   const handleDelete = async (mealId) => {
-    try {
-      await axios.delete(`/api/meals/${mealId}`);
-    } catch (error) {
-      console.error("Error deleting meal:", error);
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await axiosSecure.delete(`/meals/${mealId}`);
+          if (res.data.deletedCount > 0) {
+            Swal.fire("Deleted!", "Your meal has been deleted.", "success");
+            refetch(); // Re-fetch meals after deletion
+          } else {
+            Swal.fire("Error!", "Meal could not be deleted.", "error");
+          }
+        } catch (error) {
+          Swal.fire(
+            "Error!",
+            "An error occurred while deleting the meal.",
+            "error"
+          );
+          console.error("Error deleting meal:", error);
+        }
+      }
+    });
   };
 
   const handleView = (mealId) => {
@@ -82,7 +136,7 @@ export default function AllMeals() {
                 <td>{meal.title}</td>
                 <td>{meal.likes}</td>
                 <td>{meal.reviews?.length}</td>
-                <td>{meal.retting}</td>
+                <td>{meal.rating}</td>
                 <td>{meal.distributorName}</td>
                 <td>
                   <button
@@ -92,13 +146,13 @@ export default function AllMeals() {
                     View
                   </button>
                   <button
-                    onClick={() => handleUpdate(meal.id)}
+                    onClick={() => handleUpdate(meal)}
                     className="btn btn-warning btn-sm mr-2"
                   >
                     Update
                   </button>
                   <button
-                    onClick={() => handleDelete(meal.id)}
+                    onClick={() => handleDelete(meal._id)}
                     className="btn btn-danger btn-sm"
                   >
                     Delete
@@ -109,6 +163,61 @@ export default function AllMeals() {
           )}
         </tbody>
       </table>
+
+      {/* Update Form (Appears when a meal is selected for updating) */}
+      {mealToUpdate && (
+        <div className="mt-6 p-6 bg-gray-100 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold mb-4">Update Meal</h3>
+          <form onSubmit={handleSubmit(handleUpdateSubmit)}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium">Meal Title</label>
+              <input
+                {...register("title", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium">Likes</label>
+              <input
+                type="number"
+                {...register("likes", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium">Rating</label>
+              <input
+                type="number"
+                {...register("rating", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium">
+                Distributor Name
+              </label>
+              <input
+                {...register("distributorName", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <button type="submit" className="btn btn-primary w-full">
+              Update Meal
+            </button>
+            <button
+              type="button"
+              onClick={() => setMealToUpdate(null)}
+              className="btn btn-secondary w-full mt-2"
+            >
+              Cancel
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
