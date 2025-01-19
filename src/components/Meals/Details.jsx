@@ -19,6 +19,7 @@ export default function MealDetail() {
     data: meal,
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: ["mealDetails", id],
     queryFn: async () => {
@@ -105,9 +106,11 @@ export default function MealDetail() {
     }
     try {
       await axiosPublic.post(`/meals/${id}/reviews`, {
-        userId: user._id,
+        userName: user.displayName,
         text: reviewText,
       });
+
+      refetch();
       setReviewText("");
       Swal.fire({
         icon: "success",
