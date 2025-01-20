@@ -12,7 +12,7 @@ import UpcomingMeals from "../components/Dashboard/UpcomingMeals";
 import DashboardLayout from "../layouts/Dashboard";
 import ErrorPage from "../pages/ErrorPage";
 import PrivateRoute from "./PrivateRoute";
-import AdminRoute from "./AdminRoute";
+// import AdminRoute from "./AdminRoute";
 import MealDetail from "../components/Meals/Details";
 import MealsPage from "../components/Meals/AllMeals";
 import Payment from "../components/payment/Payment";
@@ -61,9 +61,7 @@ export const router = createBrowserRouter([
         path: "dashboard",
         element: (
           <PrivateRoute>
-            <AdminRoute>
-              <DashboardLayout />
-            </AdminRoute>
+            <DashboardLayout />
           </PrivateRoute>
         ),
         children: [

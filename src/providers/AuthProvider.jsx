@@ -15,7 +15,7 @@ import { useAxiosPublic } from "../Hooks/useAxiosPublic";
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const axiosPublic = useAxiosPublic();
 
   const provider = new GoogleAuthProvider();

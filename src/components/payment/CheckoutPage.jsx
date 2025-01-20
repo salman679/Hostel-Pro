@@ -1,33 +1,31 @@
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import Swal from "sweetalert2";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
+import { useQuery } from "@tanstack/react-query";
+// import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 export default function CheckoutPage() {
   const axiosPublic = useAxiosPublic();
+  // const axiosSecure = useAxiosSecure();
+
   const { id } = useParams();
-  const [packageDetails, setPackageDetails] = useState(null);
   const stripe = useStripe();
   const elements = useElements();
 
-  useEffect(() => {
-    const fetchPackageDetails = async () => {
-      try {
-        const response = await axiosPublic.get(`/packages/${id}`);
-        setPackageDetails(response.data);
-      } catch (error) {
-        console.error("Failed to fetch package details:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Failed to load package details. Please try again later.",
-        });
-      }
-    };
+  const { data: packageData = {} } = useQuery({
+    queryKey: ["packages", id],
+    queryFn: async () => {
+      const res = await axiosPublic.get(`/packages/${id}`);
+      return res.data;
+    },
+  });
 
-    fetchPackageDetails();
-  }, [id, axiosPublic]);
+  useEffect(() => {
+    axiosSecure.post("/create-payment-intent", {
+      price: packageData.price,
+    });
+  }, [packageData, axiosSecure]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -60,7 +58,7 @@ export default function CheckoutPage() {
       try {
         const response = await axiosPublic.post("/api/payment", {
           paymentMethodId: paymentMethod.id,
-          packageId: packageDetails._id,
+          packageId: packageData._id,
         });
 
         if (response.data.success) {
@@ -82,15 +80,16 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!packageDetails) return <div>Loading package details...</div>;
+  if (!packageData) return <div>Loading package details...</div>;
 
   return (
     <div className="container mx-auto my-16 p-6 bg-white shadow-lg rounded-lg max-w-md">
       <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-        Checkout for <span className="text-primary">{packageDetails.name}</span>
+        Checkout for <span className="text-primary">{packageData.name}</span>
       </h1>
       <p className="text-lg text-gray-700 text-center mb-4">
-        Price: <span className="font-semibold">${packageDetails.price}</span>
+        Price: <span className="font-semibold">${packageData.price}</span>
+        <span className="font-semibold">/{packageData.billingPeriod}</span>
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="form-control">
