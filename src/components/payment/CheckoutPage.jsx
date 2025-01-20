@@ -85,6 +85,7 @@ export default function CheckoutPage() {
     } else if (paymentIntent.status === "succeeded") {
       const payment = {
         price: packageData.price,
+        subscription: packageData.name,
         transactionId: paymentIntent.id,
         email: user?.email,
         name: user?.displayName,
