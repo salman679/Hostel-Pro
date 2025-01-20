@@ -96,12 +96,12 @@ const MealsPage = () => {
 
       {/* Meals List */}
       <InfiniteScroll
-        dataLength={allMeals.length} // Total number of loaded meals
+        dataLength={allMeals.length}
         next={() => {
           console.log("loading more meals");
           fetchNextPage();
-        }} // Function to load more meals
-        hasMore={!!hasNextPage} // Check if more data is available
+        }}
+        hasMore={!!hasNextPage}
         loader={
           <div className="flex justify-center items-center min-h-screen">
             <span className="loading loading-spinner loading-lg"></span>

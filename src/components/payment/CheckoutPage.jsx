@@ -3,12 +3,15 @@ import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import Swal from "sweetalert2";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
 import { useQuery } from "@tanstack/react-query";
-// import useAxiosSecure from "../../Hooks/useAxiosSecure";
+import { useEffect, useState } from "react";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function CheckoutPage() {
   const axiosPublic = useAxiosPublic();
-  // const axiosSecure = useAxiosSecure();
-
+  const axiosSecure = useAxiosSecure();
+  const [clientSecret, setClientSecret] = useState("");
+  const { user } = useAuth();
   const { id } = useParams();
   const stripe = useStripe();
   const elements = useElements();
@@ -22,9 +25,13 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    axiosSecure.post("/create-payment-intent", {
-      price: packageData.price,
-    });
+    axiosSecure
+      .post("/create-payment-intent", {
+        price: packageData.price,
+      })
+      .then((res) => {
+        setClientSecret(res.data.clientSecret);
+      });
   }, [packageData, axiosSecure]);
 
   const handleSubmit = async (event) => {
@@ -43,7 +50,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
+    const { error } = await stripe.createPaymentMethod({
       type: "card",
       card,
     });
@@ -54,29 +61,45 @@ export default function CheckoutPage() {
         title: "Payment Failed",
         text: error.message,
       });
-    } else {
-      try {
-        const response = await axiosPublic.post("/api/payment", {
-          paymentMethodId: paymentMethod.id,
-          packageId: packageData._id,
-        });
 
-        if (response.data.success) {
+      return;
+    }
+    //confirm payment
+    const { paymentIntent, error: paymentError } =
+      await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: card,
+          billing_details: {
+            email: user?.email,
+            name: user?.displayName,
+          },
+        },
+      });
+
+    if (paymentError) {
+      Swal.fire({
+        icon: "error",
+        title: "Payment Failed",
+        text: paymentError.message,
+      });
+    } else if (paymentIntent.status === "succeeded") {
+      const payment = {
+        price: packageData.price,
+        transactionId: paymentIntent.id,
+        email: user?.email,
+        name: user?.displayName,
+        packageId: id,
+      };
+
+      await axiosSecure.post("/payments", payment).then((res) => {
+        if (res.data.insertedId) {
           Swal.fire({
             icon: "success",
             title: "Payment Successful",
-            text: "Your package has been activated successfully!",
+            text: "Your payment has been processed successfully!",
           });
-
-          // Optionally: Trigger user badge update here
         }
-      } catch {
-        Swal.fire({
-          icon: "error",
-          title: "Payment Processing Error",
-          text: "Something went wrong while processing your payment. Please try again.",
-        });
-      }
+      });
     }
   };
 
@@ -104,7 +127,7 @@ export default function CheckoutPage() {
         </div>
         <button
           type="submit"
-          disabled={!stripe}
+          disabled={!stripe || !elements || !clientSecret}
           className={`btn btn-primary w-full ${!stripe && "btn-disabled"}`}
         >
           Pay Now
