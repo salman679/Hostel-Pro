@@ -1,7 +1,7 @@
 import MealsByCategory from "../components/Meals/MealsByCategory";
 import Membership from "../components/Membership/Membership";
 import Slider from "../components/Slider/Slider";
-import CustomerTestimonials from "../components/Testimonials/CustomerTestimonials";
+import Testimonials from "../components/Testimonials/Testimonials";
 
 export default function Home() {
   return (
@@ -9,7 +9,7 @@ export default function Home() {
       <Slider />
       <MealsByCategory />
       <Membership />
-      <CustomerTestimonials />
+      <Testimonials />
     </>
   );
 }

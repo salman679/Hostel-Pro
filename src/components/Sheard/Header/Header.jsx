@@ -62,7 +62,7 @@ export default function Header() {
               </li>
               <li>
                 <Link
-                  to="/upcoming-meals"
+                  to="/meals/upcoming-meals"
                   className="text-green-600 hover:text-green-800"
                 >
                   Upcoming Meals
@@ -94,7 +94,7 @@ export default function Header() {
             </li>
             <li>
               <Link
-                to="/upcoming-meals"
+                to="/meals/upcoming-meals"
                 className="text-green-600 hover:text-green-800"
               >
                 Upcoming Meals
