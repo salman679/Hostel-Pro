@@ -13,8 +13,6 @@ export default function Membership() {
     },
   });
 
-  console.log(packages);
-
   return (
     <div className="flex flex-col items-center my-12 px-4">
       <h2 className="text-4xl font-bold mb-8 text-primary">

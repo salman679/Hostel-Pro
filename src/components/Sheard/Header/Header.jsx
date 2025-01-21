@@ -149,7 +149,9 @@ export default function Header() {
                   <a className="justify-between">{user.displayName}</a>
                 </li>
                 <li>
-                  <Link to={`/dashboard`}>Dashboard</Link>
+                  <Link to={`/dashboard`} state={{ email: user.email }}>
+                    Dashboard
+                  </Link>
                 </li>
                 <li>
                   <button onClick={handleLogout}>Logout</button>

@@ -7,8 +7,6 @@ export default function PrivateRoute({ children }) {
 
   const location = useLocation();
 
-  console.log(loading);
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">

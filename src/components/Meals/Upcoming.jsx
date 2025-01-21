@@ -1,12 +1,32 @@
-import { useState } from "react";
 import Swal from "sweetalert2";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
+import { useAuth } from "../../contexts/AuthContext";
 
-export default function UpcomingMeals() {
+export default function Upcoming() {
   const axiosSecure = useAxiosSecure();
+  const { user } = useAuth();
 
-  const { data: upcomingMeals = [], refetch } = useQuery({
+  const {
+    data: userType = { subscription: "Bronze" },
+    isLoading: userLoading,
+    isError: userError,
+  } = useQuery({
+    queryKey: ["userType", user?.email],
+    queryFn: async () => {
+      if (!user?.email) throw new Error("User email is not defined");
+      const res = await axiosSecure.get(`/users/${user?.email}`);
+      return res.data?.userType || { subscription: "Free" };
+    },
+    enabled: !!user?.email,
+  });
+
+  const {
+    data: upcomingMeals = [],
+    refetch,
+    isLoading: mealsLoading,
+    isError: mealsError,
+  } = useQuery({
     queryKey: ["meals"],
     queryFn: async () => {
       const res = await axiosSecure.get("/upcoming-meals");
@@ -14,12 +34,12 @@ export default function UpcomingMeals() {
     },
   });
 
-  const [userType] = useState("Silver"); // Change to Free/Silver/Gold/Platinum to test
-
-  const handleLike = (mealIndex) => {
-    if (["Silver", "Gold", "Platinum"].includes(userType)) {
+  const handleLike = async (mealIndex) => {
+    if (["Silver", "Gold", "Platinum"].includes(userType.subscription)) {
       const updatedMeals = [...upcomingMeals];
       updatedMeals[mealIndex].likes += 1;
+
+      // Optionally refetch or handle optimistic UI updates
       refetch();
 
       Swal.fire({
@@ -38,12 +58,22 @@ export default function UpcomingMeals() {
     }
   };
 
+  if (userLoading || mealsLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (userError || mealsError) {
+    return <div>Something went wrong. Please try again later.</div>;
+  }
+
+  console.log(upcomingMeals);
+
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold text-center mb-6">Upcoming Meals</h1>
+      <h1 className="text-3xl font-bold text-center mb-6">Upcoming </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {upcomingMeals.map((meal, index) => (
-          <div key={index} className="card shadow-lg bg-base-100">
+        {upcomingMeals?.map((meal, index) => (
+          <div key={meal._id || index} className="card shadow-lg bg-base-100">
             <figure>
               <img
                 src={meal.image}

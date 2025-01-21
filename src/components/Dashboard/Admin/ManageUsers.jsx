@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
-import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
-import useAxiosSecure from "../../Hooks/useAxiosSecure.jsx";
+import { useAxiosPublic } from "../../../Hooks/useAxiosPublic.jsx";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure.jsx";
 import Swal from "sweetalert2";
 
 export default function ManageUsers() {

@@ -60,6 +60,7 @@ export default function Login() {
         name: res.user.displayName,
         email: res.user.email,
         role: "user",
+        image: res.user.photoURL,
         subscription: "Bronze",
         createdAt: new Date(),
         updatedAt: new Date(),

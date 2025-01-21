@@ -13,16 +13,17 @@ export default function SignUp() {
     const form = event.target;
     const name = form.name.value.trim();
     const email = form.email.value.trim();
+    const photo = form.photo.value.trim();
     const password = form.password.value.trim();
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !photo) {
       Swal.fire("Error", "All fields are required", "error");
       return;
     }
 
     createUser(email, password)
       .then(() => {
-        const user = { name };
+        const user = { name, photo };
         // Update on Firebase
         updateUser(user)
           .then(() => {
@@ -33,6 +34,7 @@ export default function SignUp() {
               name,
               email,
               role: "user",
+              image: photo || "https://i.ibb.co.com/HBx04n5/images.jpg",
               subscription: "Bronze",
               createdAt: new Date(),
               updatedAt: new Date(),
@@ -67,7 +69,8 @@ export default function SignUp() {
           const user = {
             name: result.user.displayName,
             email: result.user.email,
-            role: "Bronze",
+            image: result.user.photoURL,
+            role: "user",
             createdAt: new Date(),
             updatedAt: new Date(),
           };
@@ -128,6 +131,21 @@ export default function SignUp() {
               id="email"
               name="email"
               placeholder="Enter your email"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="photo"
+              className="block text-[#331A15] text-sm font-medium mb-2"
+            >
+              Photo URL
+            </label>
+            <input
+              type="url"
+              id="photo"
+              name="photo"
+              placeholder="Enter your photo URL"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
             />
           </div>
