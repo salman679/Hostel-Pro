@@ -1,19 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useAxiosPublic } from "../../../Hooks/useAxiosPublic";
-import { useAuth } from "../../../contexts/AuthContext";
+import useUserData from "../../../Hooks/useUserData";
 
 export default function UserProfile() {
-  const axiosPublic = useAxiosPublic();
-  const { user, loading } = useAuth();
-
-  const { data: userData = {} } = useQuery({
-    queryKey: ["user"],
-    enabled: !loading && !!user.email,
-    queryFn: async () => {
-      const res = await axiosPublic.get(`/users/${user.email}`);
-      return res.data;
-    },
-  });
+  const { userData } = useUserData();
 
   // Dynamic subscription styles
   const subscriptionStyles = {

@@ -29,6 +29,7 @@ export default function AuthProvider({ children }) {
     setLoading(true);
     return updateProfile(Auth.currentUser, {
       displayName: user.name,
+      photoURL: user.photo,
     });
   }
 

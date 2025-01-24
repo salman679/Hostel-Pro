@@ -1,33 +1,55 @@
-import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import { useAuth } from "../../../contexts/AuthContext";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import { useQuery } from "@tanstack/react-query";
 
 export default function RequestedMeals() {
-  const [requestedMeals, setRequestedMeals] = useState([]);
+  const { user, loading } = useAuth();
+  const axiosSecure = useAxiosSecure();
 
-  useEffect(() => {
-    fetchRequestedMeals();
-  }, []);
-
-  const fetchRequestedMeals = () => {
-    setRequestedMeals([
-      {
-        id: 1,
-        title: "Pizza",
-        likes: 120,
-        reviews_count: 15,
-        status: "Pending",
-      },
-      {
-        id: 2,
-        title: "Burger",
-        likes: 50,
-        reviews_count: 5,
-        status: "Approved",
-      },
-    ]);
-  };
+  const { data: requestedMeals = [], refetch } = useQuery({
+    queryKey: ["requests"],
+    enabled: !loading && !!user?.email,
+    queryFn: async () => {
+      const response = await axiosSecure.get(`/user/${user?.email}/requests`, {
+        params: { email: user?.email },
+      });
+      return response.data;
+    },
+  });
 
   const cancelMeal = (id) => {
-    setRequestedMeals((prev) => prev.filter((meal) => meal.id !== id));
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, cancel it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await axiosSecure.put(`/meals/${id}`, {
+            status: "cancelled",
+            email: user?.email,
+          });
+          if (response.data.modifiedCount > 0) {
+            refetch();
+            Swal.fire(
+              "Cancelled!",
+              "Your request has been cancelled.",
+              "success"
+            );
+          } else {
+            Swal.fire("Error!", "Request could not be deleted.", "error");
+          }
+        } catch (error) {
+          console.error("Error deleting request:", error);
+          Swal.fire("Error!", "An error occurred.", "error");
+        }
+      }
+    });
   };
 
   return (
@@ -46,15 +68,15 @@ export default function RequestedMeals() {
           </thead>
           <tbody>
             {requestedMeals.map((meal) => (
-              <tr key={meal.id}>
+              <tr key={meal._id}>
                 <td>{meal.title}</td>
                 <td>{meal.likes}</td>
-                <td>{meal.reviews_count}</td>
-                <td>{meal.status}</td>
+                <td>{meal.reviews.length}</td>
+                <td>{meal.requests.map((request) => request.status)}</td>
                 <td>
                   <button
                     className="btn btn-error btn-sm"
-                    onClick={() => cancelMeal(meal.id)}
+                    onClick={() => cancelMeal(meal._id)}
                   >
                     Cancel
                   </button>

@@ -5,14 +5,17 @@ import Rating from "react-rating-stars-component";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
 import Swal from "sweetalert2";
 import { useAuth } from "../../contexts/AuthContext";
+import useUserData from "../../Hooks/useUserData";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 export default function MealDetail() {
   const [reviewText, setReviewText] = useState("");
   const [likeCount, setLikeCount] = useState(0);
   const [mealRequested, setMealRequested] = useState(false);
   const { id } = useParams();
-  // const navigate = useNavigate();
+  const { userData } = useUserData();
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const { user } = useAuth();
 
   const {
@@ -39,7 +42,7 @@ export default function MealDetail() {
     }
     try {
       setLikeCount(likeCount + 1);
-      await axiosPublic.patch(`/meals/${id}/like`, {
+      await axiosSecure.patch(`/meals/${id}/like`, {
         likes: likeCount + 1,
       });
 
@@ -66,7 +69,7 @@ export default function MealDetail() {
       });
       return;
     }
-    if (!user.subscription) {
+    if (userData.subscription === "Bronze") {
       Swal.fire({
         icon: "warning",
         title: "Subscription Required",
@@ -76,8 +79,10 @@ export default function MealDetail() {
     }
 
     try {
-      await axiosPublic.post(`/meals/${id}/request`, {
-        userId: user._id,
+      await axiosSecure.post(`/meals/${id}/request`, {
+        userEmail: user.email,
+        userName: user.displayName,
+        mealId: id,
         status: "pending",
       });
       setMealRequested(true);
@@ -105,18 +110,23 @@ export default function MealDetail() {
       return;
     }
     try {
-      await axiosPublic.post(`/meals/${id}/reviews`, {
-        userName: user.displayName,
-        text: reviewText,
-      });
-
       refetch();
       setReviewText("");
-      Swal.fire({
-        icon: "success",
-        title: "Review Submitted",
-        text: "Thank you for your review!",
-      });
+      await axiosPublic
+        .post(`/meals/${id}/reviews`, {
+          userName: user.displayName,
+          userEmail: user.email,
+          text: reviewText,
+        })
+        .then((response) => {
+          if (response.modifiedCount > 0) {
+            Swal.fire({
+              icon: "success",
+              title: "Review Submitted",
+              text: "Thank you for your review!",
+            });
+          }
+        });
     } catch {
       Swal.fire({
         icon: "error",
