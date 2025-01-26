@@ -21,6 +21,7 @@ import UserProfile from "../components/Dashboard/User/UserProfile";
 import RequestedMeals from "../components/Dashboard/User/RequestedMeals";
 import Reviews from "../components/Dashboard/User/Reviews";
 import PaymentHistory from "../components/Dashboard/User/PaymentHistory";
+import Welcome from "../components/Dashboard/Welcome";
 
 export const router = createBrowserRouter([
   {
@@ -76,6 +77,10 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
+      {
+        path: "",
+        element: <Welcome />,
+      },
       {
         path: "admin-profile",
         element: (

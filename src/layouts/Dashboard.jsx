@@ -19,7 +19,9 @@ export default function DashboardLayout() {
       {/* Sidebar */}
       <div className="bg-gray-800 text-white h-screen w-[264px] fixed">
         <div className="flex justify-between items-center p-4">
-          <h2 className="text-xl font-bold text-center mt-5">Hostel Pro</h2>
+          <Link to="/">
+            <h2 className="text-xl font-bold text-center mt-5">Hostel Pro</h2>
+          </Link>
         </div>
         <nav className="mt-8">
           <ul>

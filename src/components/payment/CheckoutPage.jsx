@@ -89,6 +89,7 @@ export default function CheckoutPage() {
         transactionId: paymentIntent.id,
         email: user?.email,
         name: user?.displayName,
+        date: new Date(),
         packageId: id,
       };
 

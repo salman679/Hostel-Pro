@@ -4,6 +4,7 @@ import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import Swal from "sweetalert2";
 // import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 export default function AllMeals() {
   const [sortBy, setSortBy] = useState("likes");
@@ -82,11 +83,6 @@ export default function AllMeals() {
     });
   };
 
-  const handleView = (mealId) => {
-    // Navigate to the view page or open a modal to view the meal details
-    console.log(`View meal with ID: ${mealId}`);
-  };
-
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold mb-6">All Meals</h2>
@@ -139,12 +135,12 @@ export default function AllMeals() {
                 <td>{meal.rating}</td>
                 <td>{meal.distributorName}</td>
                 <td>
-                  <button
-                    onClick={() => handleView(meal._id)}
+                  <Link
+                    to={`/meals/${meal._id}`}
                     className="btn btn-info btn-sm mr-2"
                   >
                     View
-                  </button>
+                  </Link>
                   <button
                     onClick={() => handleUpdate(meal)}
                     className="btn btn-warning btn-sm mr-2"

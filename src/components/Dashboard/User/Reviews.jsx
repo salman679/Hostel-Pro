@@ -50,23 +50,26 @@ export default function Reviews() {
       <div className="rounded-lg p-8">
         <h2 className="text-3xl font-extrabold mb-6 text-center">My Reviews</h2>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center">
-            <span className="loading loading-dots loading-lg text-white"></span>
-          </div>
-        ) : reviewsData.length > 0 ? (
-          <div className="overflow-x-auto rounded-lg shadow-lg bg-white">
-            <table className="table w-full border-collapse">
-              <thead className="bg-green-400 text-white">
+        <div className="overflow-x-auto rounded-lg shadow-lg bg-white">
+          <table className="table w-full border-collapse">
+            <thead className="bg-green-400 text-white">
+              <tr>
+                <th className="p-4 text-left">Meal Title</th>
+                <th className="p-4 text-left">Likes</th>
+                <th className="p-4 text-left">Review</th>
+                <th className="p-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading && (
                 <tr>
-                  <th className="p-4 text-left">Meal Title</th>
-                  <th className="p-4 text-left">Likes</th>
-                  <th className="p-4 text-left">Review</th>
-                  <th className="p-4 text-left">Actions</th>
+                  <td colSpan="4" className="p-4 text-center">
+                    Loading...
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {reviewsData.map((review) => (
+              )}
+              {reviewsData.length > 0 ? (
+                reviewsData.map((review) => (
                   <tr
                     key={review._id}
                     className="hover:bg-gray-100 transition-all duration-200"
@@ -100,17 +103,17 @@ export default function Reviews() {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="flex justify-center items-center h-40">
-            <p className="text-center text-gray-200 text-xl">
-              No reviews found.
-            </p>
-          </div>
-        )}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="p-4 text-center text-gray-200">
+                    No reviews found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
