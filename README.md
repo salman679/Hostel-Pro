@@ -100,4 +100,13 @@ Explore the live application here: [Hostel Pro Live](https://hostelpro-ed1bf.web
 
 ---
 
+## 👨‍💻 Admin Credentials
+
+Use these credentials to explore the admin features:
+
+- **Email**: admin@hostelpro.com
+- **Password**: admin123
+
+---
+
 Thank you for choosing Hostel Pro! We're here to make hostel management effortless and enjoyable. 😊🎉
