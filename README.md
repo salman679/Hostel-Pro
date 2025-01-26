@@ -89,23 +89,14 @@ Your ultimate **Hostel Management System** for universities! Built with the robu
 
 ## 📂 Repository
 
-- **Frontend Code**: [Hostel Pro Frontend](#)
-- **Backend Code**: [Hostel Pro Backend](#)
+- **Frontend Code**: [Hostel Pro Frontend](https://github.com/Programming-Hero-Web-Course4/b10a12-client-side-salman679.git)
+- **Backend Code**: [Hostel Pro Backend](https://github.com/Programming-Hero-Web-Course4/b10a12-server-side-salman679.git)
 
 ---
 
 ## 🌐 Live Demo
 
-Explore the live application here: [Hostel Pro Live](#)
-
----
-
-## 👨‍💻 Admin Credentials
-
-Use these credentials to explore the admin features:
-
-- **Email**: admin@hostelpro.com
-- **Password**: admin123
+Explore the live application here: [Hostel Pro Live](https://hostelpro-ed1bf.web.app/)
 
 ---
 
