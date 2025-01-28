@@ -1,29 +1,32 @@
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
 import { Link } from "react-router-dom";
 
 const MealsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("");
   const [priceRange, setPriceRange] = useState({ min: 0, max: "" });
-  const axiosPublic = useAxiosPublic();
 
-  // Using useInfiniteQuery for handling pagination
-  const { data, fetchNextPage, refetch, hasNextPage } = useInfiniteQuery({
+  const { data: allMeals, refetch } = useInfiniteQuery({
     queryKey: ["meals", searchQuery, category, priceRange],
-    queryFn: async ({ pageParam = 1 }) => {
-      const response = await axiosPublic.get("/all-meals", {
-        params: {
-          search: searchQuery,
-          category,
-          minPrice: priceRange.min,
-          maxPrice: priceRange.max,
-          page: pageParam,
-          limit: 5,
+    queryFn: async () => {
+      const response = await fetch(
+        `https://server-nine-pearl.vercel.app/all-meals`,
+        {
+          method: "GET",
         },
-      });
+        {
+          params: {
+            search: searchQuery,
+            category,
+            minPrice: priceRange.min,
+            maxPrice: priceRange.max,
+            // page: pageParam,
+            // limit: 5,
+          },
+        }
+      );
 
       return response.data;
     },
@@ -46,7 +49,7 @@ const MealsPage = () => {
     setPriceRange((prev) => ({ ...prev, [name]: value }));
   };
 
-  const allMeals = data?.pages?.[0]?.map((meal) => meal) || [];
+  // const allMeals = data?.pages?.[0]?.map((meal) => meal) || [];
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -126,10 +129,6 @@ const MealsPage = () => {
       {/* Meals List */}
       <InfiniteScroll
         dataLength={allMeals.length}
-        next={() => {
-          fetchNextPage();
-        }}
-        hasMore={hasNextPage}
         loader={
           <div className="flex justify-center items-center min-h-screen">
             <span className="loading loading-spinner loading-lg text-gray-700"></span>
@@ -137,7 +136,7 @@ const MealsPage = () => {
         }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allMeals.length > 0 ? (
+          {allMeals?.length > 0 ? (
             allMeals.map((meal) => (
               <div
                 key={meal?._id}

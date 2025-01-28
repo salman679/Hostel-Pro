@@ -1,7 +1,7 @@
 import axios from "axios";
 
-export const useAxiosPublic = () =>
-  axios.create({
+export const useAxiosPublic = () => {
+  return axios.create({
     baseURL: "https://server-nine-pearl.vercel.app",
     headers: {
       "Content-Type": "application/json",
@@ -9,3 +9,4 @@ export const useAxiosPublic = () =>
     },
     withCredentials: true,
   });
+};
