@@ -2,10 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import { useAuth } from "../../../contexts/AuthContext";
 import moment from "moment";
+import { useState } from "react";
 
 export default function PaymentHistory() {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const { data: paymentHistory = [] } = useQuery({
     queryKey: ["paymentHistory"],
@@ -14,6 +17,21 @@ export default function PaymentHistory() {
       return res.data;
     },
   });
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentPayments = paymentHistory.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
+  const totalPages = Math.ceil(paymentHistory.length / itemsPerPage);
+
+  // Change page
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   return (
     <div className="card bg-white shadow-lg p-6">
@@ -30,8 +48,8 @@ export default function PaymentHistory() {
             </tr>
           </thead>
           <tbody className="text-center">
-            {paymentHistory.length > 0 ? (
-              paymentHistory.map((payment) => (
+            {currentPayments.length > 0 ? (
+              currentPayments.map((payment) => (
                 <tr
                   key={payment._id}
                   className="hover:bg-gray-100 transition-all duration-200"
@@ -53,6 +71,37 @@ export default function PaymentHistory() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        <div className="flex justify-center mt-4">
+          <button
+            className="btn btn-primary btn-sm mr-2"
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              className={`btn btn-sm ${
+                currentPage === index + 1 ? "btn-active" : ""
+              }`}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            className="btn btn-primary btn-sm ml-2"
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {/* Mobile-friendly view */}

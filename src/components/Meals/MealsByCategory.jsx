@@ -68,8 +68,12 @@ export default function MealsByCategory() {
         {meals.length > 0 ? (
           meals.slice(0, 3).map((meal) => (
             <div key={meal._id} className="card shadow-xl">
-              <figure>
-                <img src={meal.image} alt={meal.title} className="rounded-xl" />
+              <figure className="w-full h-64">
+                <img
+                  src={meal.image}
+                  alt={meal.title}
+                  className="rounded-t-xl w-full h-full object-cover "
+                />
               </figure>
               <div className="card-body">
                 <h2 className="card-title">{meal.title}</h2>

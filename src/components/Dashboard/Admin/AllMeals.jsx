@@ -2,20 +2,21 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import Swal from "sweetalert2";
-// import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 
 export default function AllMeals() {
   const [sortBy, setSortBy] = useState("likes");
   const [mealToUpdate, setMealToUpdate] = useState(null);
+  const [page, setPage] = useState(1); // Page state for pagination
   const axiosSecure = useAxiosSecure();
-  // const navigate = useNavigate();
 
   const { data: meals = [], refetch } = useQuery({
-    queryKey: ["meals", sortBy],
+    queryKey: ["meals", sortBy, page],
     queryFn: async () => {
-      const response = await axiosSecure.get("/meals", { params: { sortBy } });
+      const response = await axiosSecure.get("/meals", {
+        params: { sortBy, page },
+      });
       return response.data;
     },
   });
@@ -37,12 +38,15 @@ export default function AllMeals() {
     console.log(data);
 
     try {
-      const res = await axiosSecure.put(`/meals/${mealToUpdate._id}`, data);
-      if (res.data.updatedMeal) {
+      const res = await axiosSecure.put(
+        `/meals/${mealToUpdate._id}/edit`,
+        data
+      );
+      if (res.data.modifiedCount > 0) {
         Swal.fire("Updated!", "Your meal has been updated.", "success");
         setMealToUpdate(null);
-        reset(); // Reset the form after successful update
-        refetch(); // Re-fetch meals after update
+        reset();
+        refetch();
       } else {
         Swal.fire("Error!", "Meal could not be updated.", "error");
       }
@@ -68,13 +72,16 @@ export default function AllMeals() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await axiosSecure.delete(`/meals/${mealId}`);
-          if (res.data.deletedCount > 0) {
-            Swal.fire("Deleted!", "Your meal has been deleted.", "success");
-            refetch(); // Re-fetch meals after deletion
-          } else {
-            Swal.fire("Error!", "Meal could not be deleted.", "error");
-          }
+          await axiosSecure.delete(`/meals/${mealId}`).then((res) => {
+            console.log(res);
+
+            if (res.data.deletedCount > 0) {
+              Swal.fire("Deleted!", "Your meal has been deleted.", "success");
+              refetch();
+            } else {
+              Swal.fire("Error!", "Meal could not be deleted.", "error");
+            }
+          });
         } catch (error) {
           Swal.fire(
             "Error!",
@@ -85,6 +92,16 @@ export default function AllMeals() {
         }
       }
     });
+  };
+
+  // Pagination logic
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(meals.length / itemsPerPage);
+  const startIndex = (page - 1) * itemsPerPage;
+  const currentPageMeals = meals.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
   };
 
   return (
@@ -124,14 +141,14 @@ export default function AllMeals() {
           </tr>
         </thead>
         <tbody>
-          {meals.length === 0 ? (
+          {currentPageMeals.length === 0 ? (
             <tr>
               <td colSpan="6" className="text-center">
                 No meals available
               </td>
             </tr>
           ) : (
-            meals.map((meal) => (
+            currentPageMeals.map((meal) => (
               <tr key={meal._id}>
                 <td>{meal.title}</td>
                 <td>{meal.likes}</td>
@@ -164,15 +181,36 @@ export default function AllMeals() {
         </tbody>
       </table>
 
+      {/* Pagination */}
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={() => handlePageChange(page - 1)}
+          disabled={page === 1}
+          className="btn btn-secondary mr-2"
+        >
+          Prev
+        </button>
+        <span className="text-lg">
+          {page} of {totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange(page + 1)}
+          disabled={page === totalPages}
+          className="btn btn-secondary ml-2"
+        >
+          Next
+        </button>
+      </div>
+
       {/* Update Modal (Appears when a meal is selected for updating) */}
       {mealToUpdate && (
         <div
-          className="fixed inset-0 bg-gray-800 bg-opacity-50  flex justify-center items-center overflow-y-auto"
-          onClick={() => setMealToUpdate(null)} // Close modal when clicking outside
+          className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center overflow-y-auto"
+          onClick={() => setMealToUpdate(null)}
         >
           <div
             className="bg-white rounded-lg p-6 w-1/2 mt-48"
-            onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
+            onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-xl font-semibold mb-4">Update Meal</h3>
             <form onSubmit={handleSubmit(handleUpdateSubmit)}>

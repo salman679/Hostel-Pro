@@ -8,6 +8,8 @@ import { useState } from "react";
 export default function Reviews() {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const {
     data: reviewsData = [],
@@ -73,6 +75,18 @@ export default function Reviews() {
     });
   };
 
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentReviews = reviewsData.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(reviewsData.length / itemsPerPage);
+
+  // Change page
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div className="card bg-white shadow-lg p-4 md:p-6 mb-6">
       <h2 className="text-xl md:text-3xl font-extrabold text-center mb-4 md:mb-6">
@@ -96,8 +110,8 @@ export default function Reviews() {
                   Loading...
                 </td>
               </tr>
-            ) : reviewsData.length > 0 ? (
-              reviewsData.map((review) => (
+            ) : currentReviews.length > 0 ? (
+              currentReviews.map((review) => (
                 <tr
                   key={review._id}
                   className="hover:bg-gray-100 transition-all duration-200 text-center"
@@ -177,6 +191,36 @@ export default function Reviews() {
             )}
           </tbody>
         </table>
+        {/* Pagination */}
+        <div className="flex justify-center mt-4">
+          <button
+            className="btn btn-primary btn-sm mr-2"
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              className={`btn btn-sm ${
+                currentPage === index + 1 ? "btn-active" : ""
+              }`}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            className="btn btn-primary btn-sm ml-2"
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

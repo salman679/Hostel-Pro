@@ -135,18 +135,13 @@ const MealsPage = () => {
             <span className="loading loading-spinner loading-lg text-gray-700"></span>
           </div>
         }
-        endMessage={
-          <p className="text-center text-lg font-semibold text-gray-600">
-            No more meals to show.
-          </p>
-        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {allMeals.length > 0 ? (
             allMeals.map((meal) => (
               <div
                 key={meal?._id}
-                className="card bg-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                className="card bg-white hover:shadow-xl transition-all transform hover:scale-105"
               >
                 <figure>
                   <img

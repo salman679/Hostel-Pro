@@ -8,9 +8,9 @@ export default function useUserData() {
 
   const { data: userData = {}, isLoading } = useQuery({
     queryKey: ["user"],
-    enabled: !loading && !!user.email,
+    enabled: !loading && !!user?.email,
     queryFn: async () => {
-      const res = await axiosPublic.get(`/users/${user.email}`);
+      const res = await axiosPublic.get(`/users/${user?.email}`);
       return res.data;
     },
   });

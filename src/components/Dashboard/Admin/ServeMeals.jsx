@@ -6,6 +6,8 @@ import Swal from "sweetalert2";
 const ServeMeals = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const axiosSecure = useAxiosSecure();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const { data: requestedMeals = [], refetch } = useQuery({
     queryKey: ["meals", searchQuery],
@@ -35,6 +37,18 @@ const ServeMeals = () => {
     }
   };
 
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentMeals = requestedMeals.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(requestedMeals.length / itemsPerPage);
+
+  // Change page
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Serve Meals</h1>
@@ -49,7 +63,6 @@ const ServeMeals = () => {
       />
 
       {/* Meals Table */}
-
       <div className="overflow-x-auto">
         <table className="table w-full">
           <thead>
@@ -62,8 +75,8 @@ const ServeMeals = () => {
             </tr>
           </thead>
           <tbody>
-            {requestedMeals.length > 0 ? (
-              requestedMeals.map((meal, index) => (
+            {currentMeals.length > 0 ? (
+              currentMeals.map((meal, index) => (
                 <tr key={index}>
                   <td>{meal.title}</td>
                   <td>{meal.requests.userName}</td>
@@ -106,6 +119,37 @@ const ServeMeals = () => {
             )}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        <div className="flex justify-center mt-4">
+          <button
+            className="btn btn-primary btn-sm mr-2"
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              className={`btn btn-sm ${
+                currentPage === index + 1 ? "btn-active" : ""
+              }`}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            className="btn btn-primary btn-sm ml-2"
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

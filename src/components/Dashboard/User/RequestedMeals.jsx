@@ -2,10 +2,13 @@ import Swal from "sweetalert2";
 import { useAuth } from "../../../contexts/AuthContext";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 export default function RequestedMeals() {
   const { user, loading } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const { data: requestedMeals = [], refetch } = useQuery({
     queryKey: ["requests"],
@@ -52,6 +55,21 @@ export default function RequestedMeals() {
     });
   };
 
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentRequestedMeals = requestedMeals.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
+  const totalPages = Math.ceil(requestedMeals.length / itemsPerPage);
+
+  // Change page
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div className="card bg-white shadow-lg p-6 mb-6">
       <h2 className="text-xl font-bold text-center mb-6">Requested Meals</h2>
@@ -69,8 +87,8 @@ export default function RequestedMeals() {
             </tr>
           </thead>
           <tbody>
-            {requestedMeals.length > 0 ? (
-              requestedMeals.map((meal) => (
+            {currentRequestedMeals.length > 0 ? (
+              currentRequestedMeals.map((meal) => (
                 <tr key={meal._id} className="border-b text-center">
                   <td className="p-2 text-xs sm:text-sm">{meal.title}</td>
                   <td className="p-2 text-xs sm:text-sm">{meal.likes}</td>
@@ -99,6 +117,37 @@ export default function RequestedMeals() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        <div className="flex justify-center mt-4">
+          <button
+            className="btn btn-primary btn-sm mr-2"
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              className={`btn btn-sm ${
+                currentPage === index + 1 ? "btn-active" : ""
+              }`}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            className="btn btn-primary btn-sm ml-2"
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {/* Mobile-Friendly Cards for Small Screens */}

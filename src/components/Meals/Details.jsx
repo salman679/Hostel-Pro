@@ -149,15 +149,17 @@ export default function MealDetail() {
     );
   if (isError) return <div>Error loading meal details.</div>;
 
-  console.log(meal);
-
   return (
     <div className="p-8">
       {/* Meal Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="card shadow-xl">
-          <figure>
-            <img src={meal.image} alt={meal.title} className="rounded-xl" />
+          <figure className="w-full h-full">
+            <img
+              src={meal.image}
+              alt={meal.title}
+              className="rounded-xl w-full h-full object-cover"
+            />
           </figure>
         </div>
 

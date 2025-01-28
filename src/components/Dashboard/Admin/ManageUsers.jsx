@@ -8,6 +8,8 @@ import Swal from "sweetalert2";
 export default function ManageUsers() {
   const axiosPublic = useAxiosPublic();
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // Display 10 items per page
   const axiosSecure = useAxiosSecure();
 
   // Fetch users using TanStack Query v5
@@ -19,7 +21,7 @@ export default function ManageUsers() {
     queryKey: ["users", searchTerm],
     queryFn: async () => {
       const response = await axiosSecure.get("/users", {
-        params: { search: searchTerm }, // Send search term as query param
+        params: { search: searchTerm },
       });
       return response.data;
     },
@@ -28,6 +30,7 @@ export default function ManageUsers() {
   // Handle search input change
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
     refetch(); // Refetch data on search term change
   };
 
@@ -47,11 +50,22 @@ export default function ManageUsers() {
         const response = await axiosPublic.patch(`/users/admin/${userId}`);
         if (response.data.modifiedCount > 0) {
           Swal.fire("Success", "User made admin successfully", "success");
-
           refetch(); // Refetch data after making user an admin
         }
       }
     });
+  };
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsers = users.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+
+  // Change page
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
   return (
@@ -87,8 +101,8 @@ export default function ManageUsers() {
               </tr>
             </thead>
             <tbody>
-              {users?.length > 0 ? (
-                users?.map((user) => (
+              {currentUsers?.length > 0 ? (
+                currentUsers?.map((user) => (
                   <tr key={user._id}>
                     <td>{user.name}</td>
                     <td>{user.email}</td>
@@ -131,6 +145,37 @@ export default function ManageUsers() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          <div className="flex justify-center mt-4">
+            <button
+              className="btn btn-primary btn-sm mr-2"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+
+            {[...Array(totalPages)].map((_, index) => (
+              <button
+                key={index}
+                className={`btn btn-sm ${
+                  currentPage === index + 1 ? "btn-active" : ""
+                }`}
+                onClick={() => handlePageChange(index + 1)}
+              >
+                {index + 1}
+              </button>
+            ))}
+
+            <button
+              className="btn btn-primary btn-sm ml-2"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>
