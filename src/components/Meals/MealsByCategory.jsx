@@ -39,10 +39,10 @@ export default function MealsByCategory() {
         {["All", "Breakfast", "Lunch", "Dinner"].map((category) => (
           <button
             key={category}
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ease-in-out duration-300 ${
               selectedCategory === category
-                ? "bg-blue-600 text-white shadow-lg scale-105"
-                : "bg-gray-200 text-gray-700 hover:bg-blue-100 hover:text-blue-600"
+                ? "bg-green-600 text-white shadow-lg scale-105 hover:bg-green-700 "
+                : "bg-gray-200 text-gray-700 hover:bg-green-100 hover:text-green-600"
             }`}
             onClick={() => handleTabChange(category)}
           >
@@ -52,7 +52,11 @@ export default function MealsByCategory() {
       </div>
 
       {/* Loading/Error Handling */}
-      {isLoading && <div className="text-center my-4">Loading meals...</div>}
+      {isLoading && (
+        <div className="text-center my-4">
+          <span className="loading loading-dots loading-md"></span>
+        </div>
+      )}
       {isError && (
         <div className="text-center my-4 text-red-500">
           Failed to load meals. Please try again later.
@@ -85,7 +89,7 @@ export default function MealsByCategory() {
                 <p className="text-lg font-bold">Price: {meal.price}</p>
                 <div className="card-actions justify-end">
                   <button
-                    className="btn btn-primary"
+                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
                     onClick={() => navigate(`/meals/${meal._id}`)}
                   >
                     Details

@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import Swal from "sweetalert2";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
@@ -15,6 +15,8 @@ export default function CheckoutPage() {
   const { id } = useParams();
   const stripe = useStripe();
   const elements = useElements();
+
+  const Navigate = useNavigate();
 
   const { data: packageData = {} } = useQuery({
     queryKey: ["packages", id],
@@ -95,6 +97,7 @@ export default function CheckoutPage() {
 
       await axiosSecure.post("/payments", payment).then((res) => {
         if (res.data.insertedId) {
+          Navigate("/");
           Swal.fire({
             icon: "success",
             title: "Payment Successful",
@@ -105,7 +108,9 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!packageData) return <div>Loading package details...</div>;
+  if (!packageData) {
+    return <span className="loading loading-dots loading-md"></span>;
+  }
 
   return (
     <div className="container mx-auto my-16 p-6 bg-white shadow-lg rounded-lg max-w-md">

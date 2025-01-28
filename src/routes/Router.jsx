@@ -22,6 +22,7 @@ import RequestedMeals from "../components/Dashboard/User/RequestedMeals";
 import Reviews from "../components/Dashboard/User/Reviews";
 import PaymentHistory from "../components/Dashboard/User/PaymentHistory";
 import Welcome from "../components/Dashboard/Welcome";
+import ServeMeals from "../components/Dashboard/Admin/ServeMeals";
 
 export const router = createBrowserRouter([
   {
@@ -137,6 +138,16 @@ export const router = createBrowserRouter([
           <PrivateRoute>
             <AdminRoute>
               <UpcomingMeals />
+            </AdminRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "serve-meals",
+        element: (
+          <PrivateRoute>
+            <AdminRoute>
+              <ServeMeals />
             </AdminRoute>
           </PrivateRoute>
         ),

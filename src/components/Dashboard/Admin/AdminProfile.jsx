@@ -1,38 +1,88 @@
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../contexts/AuthContext";
+import {
+  Badge,
+  Box,
+  Flex,
+  Heading,
+  Image,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 
 export default function AdminProfile() {
   const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
 
-  //TODO: Add admin stats
+  const { data: adminStats = {} } = useQuery({
+    queryKey: ["adminStats"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/meals/admin", {
+        params: { email: user?.email },
+      });
+      return res.data;
+    },
+  });
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
-      <div className="flex items-center space-x-4">
+    <Box
+      bg="white"
+      p={8}
+      rounded="lg"
+      shadow="lg"
+      maxW="md"
+      mx="auto"
+      className="bg-gradient-to-tr from-blue-100 to-indigo-50"
+    >
+      <Flex align="center" mb={6}>
         {/* Admin Profile Image */}
-        <div className="w-16 h-16">
-          <img
-            src={user?.photoURL || "https://i.ibb.co.com/HBx04n5/images.jpg"}
+        <Box
+          w={16}
+          h={16}
+          rounded="full"
+          overflow="hidden"
+          borderWidth={2}
+          borderColor="gray.300"
+        >
+          <Image
+            src={user?.photoURL || "https://i.ibb.co/HBx04n5/images.jpg"}
             alt="Admin Profile"
-            className="w-full h-full rounded-full border-2 border-gray-300"
+            boxSize="full"
+            objectFit="cover"
           />
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold text-gray-800">
-            {user?.displayName}
-          </h2>
-          <p className="text-sm text-gray-500">{user?.email}</p>
-        </div>
-      </div>
+        </Box>
 
-      <div className="mt-6">
-        <h3 className="text-lg font-medium text-gray-700">Admin Stats</h3>
-        <ul className="mt-3 text-gray-600">
-          <li className="flex justify-between">
-            <span className="font-semibold">Meals Added:</span>
-            {/* <span>{}</span> */}
-          </li>
-        </ul>
-      </div>
-    </div>
+        <Stack ml={4} spacing={1}>
+          <Heading size="md" color="gray.800">
+            {user?.displayName || "Admin Name"}
+          </Heading>
+          <Text fontSize="sm" color="gray.500">
+            {user?.email || "admin@example.com"}
+          </Text>
+          <Badge colorScheme="blue" px={2} py={1} rounded="md">
+            Admin
+          </Badge>
+        </Stack>
+      </Flex>
+
+      {/* Admin Stats Section */}
+      <Box mt={4}>
+        <Heading size="sm" color="gray.700" mb={3}>
+          Admin Stats
+        </Heading>
+
+        <Stack spacing={3}>
+          <Flex justify="space-between" align="center">
+            <Text fontWeight="semibold" color="gray.600">
+              Meals Added:
+            </Text>
+            <Text color="blue.600" fontWeight="bold">
+              {adminStats.count}
+            </Text>
+          </Flex>
+        </Stack>
+      </Box>
+    </Box>
   );
 }

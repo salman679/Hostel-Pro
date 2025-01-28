@@ -17,32 +17,73 @@ export default function PaymentHistory() {
 
   return (
     <div className="card bg-white shadow-lg p-6">
-      <h2 className="text-xl font-bold  text-center mb-6">Payment History</h2>
+      <h2 className="text-xl font-bold text-center mb-6">Payment History</h2>
 
-      <table className="table w-full">
-        <thead className="bg-gray-200 text-center">
-          <tr>
-            <th>Package Name</th>
-            <th>Amount</th>
-            <th>Transaction ID</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody className="text-center">
-          {paymentHistory.length > 0 ? (
-            paymentHistory.map((payment) => (
-              <tr key={payment._id}>
-                <td>{payment.subscription}</td>
-                <td>${payment.price}</td>
-                <td>{payment.transactionId}</td>
-                <td>{moment(payment.date).format("MMMM D, YYYY")}</td>
+      <div className="overflow-x-auto hidden md:block">
+        <table className="table w-full border-collapse">
+          <thead className="bg-gray-200 text-center">
+            <tr>
+              <th className="p-4">Package Name</th>
+              <th className="p-4">Amount</th>
+              <th className="p-4">Transaction ID</th>
+              <th className="p-4">Date</th>
+            </tr>
+          </thead>
+          <tbody className="text-center">
+            {paymentHistory.length > 0 ? (
+              paymentHistory.map((payment) => (
+                <tr
+                  key={payment._id}
+                  className="hover:bg-gray-100 transition-all duration-200"
+                >
+                  <td className="p-4">{payment.subscription}</td>
+                  <td className="p-4">${payment.price}</td>
+                  <td className="p-4">{payment.transactionId}</td>
+                  <td className="p-4">
+                    {moment(payment.date).format("MMMM D, YYYY")}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="p-4 text-gray-500 text-center">
+                  No payment history found.
+                </td>
               </tr>
-            ))
-          ) : (
-            <p>No payment history found.</p>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile-friendly view */}
+      <div className="md:hidden">
+        {paymentHistory.length > 0 ? (
+          paymentHistory.map((payment) => (
+            <div
+              key={payment._id}
+              className="p-4 border rounded-lg mb-4 shadow-md bg-gray-50"
+            >
+              <p>
+                <span className="font-bold">Package:</span>{" "}
+                {payment.subscription}
+              </p>
+              <p>
+                <span className="font-bold">Amount:</span> ${payment.price}
+              </p>
+              <p>
+                <span className="font-bold">Transaction ID:</span>{" "}
+                {payment.transactionId}
+              </p>
+              <p>
+                <span className="font-bold">Date:</span>{" "}
+                {moment(payment.date).format("MMMM D, YYYY")}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500">No payment history found.</p>
+        )}
+      </div>
     </div>
   );
 }

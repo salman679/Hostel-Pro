@@ -19,12 +19,12 @@ export default function AddMeal() {
 
   // Handle form submission
   const onSubmit = async (data) => {
-    console.log("Meal Data:", data);
-
+    const price = Number(data.price);
     try {
       await axiosSecure
         .post("/meals", {
           ...data,
+          price,
           image: imageUrl,
           likes: 0,
           ratting: 0,
@@ -34,6 +34,8 @@ export default function AddMeal() {
           if (res.data.insertedId) {
             Swal.fire("Success", "Meal added successfully", "success");
             reset();
+            setImageUrl("");
+            document.getElementById("image").value = "";
           }
         })
         .catch((error) => {
@@ -100,8 +102,13 @@ export default function AddMeal() {
               className="select select-bordered w-full mt-2"
             >
               <option value="">Select Category</option>
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
               <option value="veg">Vegetarian</option>
               <option value="non-veg">Non-Vegetarian</option>
+              <option value="vegan">Vegan</option>
+              <option value="special">Special Meals</option>
               <option value="dessert">Dessert</option>
             </select>
             {errors.category && (

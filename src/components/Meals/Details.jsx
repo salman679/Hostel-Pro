@@ -11,7 +11,6 @@ import useAxiosSecure from "../../Hooks/useAxiosSecure";
 export default function MealDetail() {
   const [reviewText, setReviewText] = useState("");
   const [likeCount, setLikeCount] = useState(0);
-  const [mealRequested, setMealRequested] = useState(false);
   const { id } = useParams();
   const { userData } = useUserData();
   const axiosPublic = useAxiosPublic();
@@ -85,7 +84,7 @@ export default function MealDetail() {
         mealId: id,
         status: "pending",
       });
-      setMealRequested(true);
+      refetch();
       Swal.fire({
         icon: "success",
         title: "Request Sent",
@@ -110,7 +109,6 @@ export default function MealDetail() {
       return;
     }
     try {
-      refetch();
       setReviewText("");
       await axiosPublic
         .post(`/meals/${id}/reviews`, {
@@ -119,7 +117,8 @@ export default function MealDetail() {
           text: reviewText,
         })
         .then((response) => {
-          if (response.modifiedCount > 0) {
+          if (response.data.modifiedCount > 0) {
+            refetch();
             Swal.fire({
               icon: "success",
               title: "Review Submitted",
@@ -150,6 +149,8 @@ export default function MealDetail() {
     );
   if (isError) return <div>Error loading meal details.</div>;
 
+  console.log(meal);
+
   return (
     <div className="p-8">
       {/* Meal Details */}
@@ -177,7 +178,7 @@ export default function MealDetail() {
             <Rating
               count={5}
               size={24}
-              value={meal.rating || 0}
+              value={Number(meal.rating) || 0}
               edit={false}
               activeColor="#ffd700"
             />
@@ -197,11 +198,17 @@ export default function MealDetail() {
           {/* Meal Request Button */}
           <div className="mt-4">
             <button
-              className="btn btn-primary"
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleRequestMeal}
-              disabled={mealRequested}
+              disabled={meal?.requests?.some(
+                (request) => request.userEmail === user?.email
+              )}
             >
-              {mealRequested ? "Request Sent" : "Request This Meal"}
+              {meal?.requests?.some(
+                (request) => request.userEmail === user?.email
+              )
+                ? "Request Sent"
+                : "Request This Meal"}
             </button>
           </div>
         </div>
@@ -235,7 +242,7 @@ export default function MealDetail() {
               onChange={(e) => setReviewText(e.target.value)}
             />
             <button
-              className="btn btn-primary mt-4"
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-200 mt-4"
               onClick={handleReviewSubmit}
             >
               Submit Review

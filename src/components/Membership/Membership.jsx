@@ -15,9 +15,7 @@ export default function Membership() {
 
   return (
     <div className="flex flex-col items-center my-12 px-4">
-      <h2 className="text-4xl font-bold mb-8 text-primary">
-        Upgrade to Premium
-      </h2>
+      <h2 className="text-4xl font-bold mb-8 ">Upgrade to Premium</h2>
       <p className="text-lg text-gray-600 mb-8 max-w-2xl text-center">
         Select the plan that fits your needs and enjoy exclusive benefits and
         features.
@@ -32,7 +30,7 @@ export default function Membership() {
               <h3 className="text-2xl font-semibold text-gray-800 mb-2">
                 {pkg.name} Package
               </h3>
-              <p className="text-4xl font-bold text-primary mb-2">
+              <p className="text-4xl font-bold text-green-500 mb-2">
                 ${pkg.price}
                 <span className="text-base text-gray-600">
                   /{pkg.billingPeriod}
@@ -40,7 +38,7 @@ export default function Membership() {
               </p>
               <p className="text-gray-600 my-4">{pkg.description}</p>
               <Link
-                className="btn btn-primary w-full hover:bg-primary-focus"
+                className="btn btn-green w-full hover:bg-green-600 hover:text-white focus:bg-green-600 focus:shadow-focus"
                 to={`/checkout/${pkg._id}`}
               >
                 Select {pkg.name}

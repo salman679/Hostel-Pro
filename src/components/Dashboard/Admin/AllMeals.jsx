@@ -26,12 +26,16 @@ export default function AllMeals() {
   const handleUpdate = (meal) => {
     setMealToUpdate(meal);
     setValue("title", meal.title);
-    setValue("likes", meal.likes);
-    setValue("rating", meal.rating);
-    setValue("distributorName", meal.distributorName);
+    setValue("category", meal.category);
+    setValue("image", meal.image);
+    setValue("ingredients", meal.ingredients);
+    setValue("description", meal.description);
+    setValue("price", meal.price);
   };
 
   const handleUpdateSubmit = async (data) => {
+    console.log(data);
+
     try {
       const res = await axiosSecure.put(`/meals/${mealToUpdate._id}`, data);
       if (res.data.updatedMeal) {
@@ -160,58 +164,80 @@ export default function AllMeals() {
         </tbody>
       </table>
 
-      {/* Update Form (Appears when a meal is selected for updating) */}
+      {/* Update Modal (Appears when a meal is selected for updating) */}
       {mealToUpdate && (
-        <div className="mt-6 p-6 bg-gray-100 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-4">Update Meal</h3>
-          <form onSubmit={handleSubmit(handleUpdateSubmit)}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Meal Title</label>
-              <input
-                {...register("title", { required: true })}
-                className="input input-bordered w-full"
-              />
-            </div>
+        <div
+          className="fixed inset-0 bg-gray-800 bg-opacity-50  flex justify-center items-center overflow-y-auto"
+          onClick={() => setMealToUpdate(null)} // Close modal when clicking outside
+        >
+          <div
+            className="bg-white rounded-lg p-6 w-1/2 mt-48"
+            onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
+          >
+            <h3 className="text-xl font-semibold mb-4">Update Meal</h3>
+            <form onSubmit={handleSubmit(handleUpdateSubmit)}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Meal Title</label>
+                <input
+                  {...register("title", { required: true })}
+                  className="input input-bordered w-full"
+                />
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Likes</label>
-              <input
-                type="number"
-                {...register("likes", { required: true })}
-                className="input input-bordered w-full"
-              />
-            </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Category</label>
+                <input
+                  {...register("category", { required: true })}
+                  className="input input-bordered w-full"
+                />
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium">Rating</label>
-              <input
-                type="number"
-                {...register("rating", { required: true })}
-                className="input input-bordered w-full"
-              />
-            </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Image</label>
+                <input
+                  type="url"
+                  {...register("image", { required: true })}
+                  className="input input-bordered w-full"
+                />
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium">
-                Distributor Name
-              </label>
-              <input
-                {...register("distributorName", { required: true })}
-                className="input input-bordered w-full"
-              />
-            </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Ingredients</label>
+                <textarea
+                  {...register("ingredients", { required: true })}
+                  className="input input-bordered w-full"
+                ></textarea>
+              </div>
 
-            <button type="submit" className="btn btn-primary w-full">
-              Update Meal
-            </button>
-            <button
-              type="button"
-              onClick={() => setMealToUpdate(null)}
-              className="btn btn-secondary w-full mt-2"
-            >
-              Cancel
-            </button>
-          </form>
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Description</label>
+                <textarea
+                  {...register("description", { required: true })}
+                  className="input input-bordered w-full"
+                ></textarea>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Price</label>
+                <input
+                  type="number"
+                  {...register("price", { required: true })}
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary w-full">
+                Update Meal
+              </button>
+              <button
+                type="button"
+                onClick={() => setMealToUpdate(null)}
+                className="btn btn-secondary w-full mt-2"
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

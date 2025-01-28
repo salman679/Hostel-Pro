@@ -54,40 +54,85 @@ export default function RequestedMeals() {
 
   return (
     <div className="card bg-white shadow-lg p-6 mb-6">
-      <h2 className="text-xl font-bold mb-4">Requested Meals</h2>
-      {requestedMeals.length > 0 ? (
-        <table className="table w-full">
+      <h2 className="text-xl font-bold text-center mb-6">Requested Meals</h2>
+
+      {/* Table Wrapper for Responsiveness */}
+      <div className="overflow-x-auto hidden md:block">
+        <table className="table-auto w-full border-collapse border border-gray-200">
           <thead>
-            <tr>
-              <th>Meal Title</th>
-              <th>Likes</th>
-              <th>Reviews Count</th>
-              <th>Status</th>
-              <th>Action</th>
+            <tr className="bg-gray-100 text-gray-700">
+              <th className="p-2 text-sm sm:text-base">Meal Title</th>
+              <th className="p-2 text-sm sm:text-base">Likes</th>
+              <th className="p-2 text-sm sm:text-base">Reviews Count</th>
+              <th className="p-2 text-sm sm:text-base">Status</th>
+              <th className="p-2 text-sm sm:text-base">Action</th>
             </tr>
           </thead>
           <tbody>
-            {requestedMeals.map((meal) => (
-              <tr key={meal._id}>
-                <td>{meal.title}</td>
-                <td>{meal.likes}</td>
-                <td>{meal.reviews.length}</td>
-                <td>{meal.requests.map((request) => request.status)}</td>
-                <td>
-                  <button
-                    className="btn btn-error btn-sm"
-                    onClick={() => cancelMeal(meal._id)}
-                  >
-                    Cancel
-                  </button>
+            {requestedMeals.length > 0 ? (
+              requestedMeals.map((meal) => (
+                <tr key={meal._id} className="border-b text-center">
+                  <td className="p-2 text-xs sm:text-sm">{meal.title}</td>
+                  <td className="p-2 text-xs sm:text-sm">{meal.likes}</td>
+                  <td className="p-2 text-xs sm:text-sm">
+                    {meal.reviews.length}
+                  </td>
+                  <td className="p-2 text-xs sm:text-sm">
+                    {meal.requests.map((request) => request.status)}
+                  </td>
+                  <td className="p-2">
+                    <button
+                      className="btn btn-error btn-sm text-xs sm:text-sm text-white"
+                      onClick={() => cancelMeal(meal._id)}
+                    >
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="text-center text-gray-500 p-4">
+                  No requested meals found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
-      ) : (
-        <p>No requested meals found.</p>
-      )}
+      </div>
+
+      {/* Mobile-Friendly Cards for Small Screens */}
+      <div className="md:hidden mt-4">
+        {requestedMeals.length > 0 ? (
+          requestedMeals.map((meal) => (
+            <div
+              key={meal._id}
+              className="border rounded-lg p-4 mb-4 bg-gray-50 shadow-sm"
+            >
+              <h3 className="font-semibold text-sm mb-2">{meal.title}</h3>
+              <p className="text-xs">
+                <span className="font-medium">Likes:</span> {meal.likes}
+              </p>
+              <p className="text-xs">
+                <span className="font-medium">Reviews:</span>{" "}
+                {meal.reviews.length}
+              </p>
+              <p className="text-xs">
+                <span className="font-medium">Status:</span>{" "}
+                {meal.requests.map((request) => request.status)}
+              </p>
+              <button
+                className="btn btn-error btn-sm text-white text-xs mt-2"
+                onClick={() => cancelMeal(meal._id)}
+              >
+                Cancel
+              </button>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500 text-sm">No meals found.</p>
+        )}
+      </div>
     </div>
   );
 }
