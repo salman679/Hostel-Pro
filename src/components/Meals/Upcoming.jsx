@@ -34,8 +34,7 @@ export default function Upcoming() {
         const response = await axiosSecure.patch(
           `/upcoming-meals/${meal._id}/like`,
           {
-            likes: meal.likes + 1,
-            userEmail: user.email, // Send the user's email
+            userEmail: user.email,
           }
         );
 
@@ -111,7 +110,7 @@ export default function Upcoming() {
                 <strong>Price:</strong> ${meal?.price}
               </p>
               <p className="text-sm text-gray-500">
-                <strong>Rating:</strong> ⭐ {meal?.ratting}/5
+                <strong>Rating:</strong> ⭐ {meal?.retting}/5
               </p>
               <div className="text-sm text-gray-500">
                 <strong>Distributor:</strong> {meal.distributorName}

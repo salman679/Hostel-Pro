@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const useAxiosPublic = () => {
   return axios.create({
-    baseURL: "https://server-nine-pearl.vercel.app",
+    baseURL: "http://localhost:5000",
     headers: {
       "Content-Type": "application/json",
       authorization: `Bearer ${localStorage.getItem("accessToken")}`,

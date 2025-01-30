@@ -1,43 +1,39 @@
 import { useState } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
 
 const MealsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("");
-  const [priceRange, setPriceRange] = useState({ min: 0, max: "" });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const axiosPublic = useAxiosPublic();
 
-  const { data: allMeals, refetch } = useInfiniteQuery({
+  // Fetch meals using tanstack-query
+  const {
+    data: meals = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["meals", searchQuery, category, priceRange],
     queryFn: async () => {
-      const response = await fetch(
-        `https://server-nine-pearl.vercel.app/all-meals`,
-        {
-          method: "GET",
+      const response = await axiosPublic("/all-meals", {
+        params: {
+          search: searchQuery,
+          category: category,
+          minPrice: priceRange.min,
+          maxPrice: priceRange.max,
         },
-        {
-          params: {
-            search: searchQuery,
-            category,
-            minPrice: priceRange.min,
-            maxPrice: priceRange.max,
-            // page: pageParam,
-            // limit: 5,
-          },
-        }
-      );
+      });
 
       return response.data;
     },
-    getNextPageParam: (lastPage) => {
-      return lastPage.hasMore ? lastPage.nextPage : undefined;
-    },
   });
+
+  console.log(meals);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
-    refetch();
   };
 
   const handleCategoryChange = (e) => {
@@ -48,8 +44,6 @@ const MealsPage = () => {
     const { name, value } = e.target;
     setPriceRange((prev) => ({ ...prev, [name]: value }));
   };
-
-  // const allMeals = data?.pages?.[0]?.map((meal) => meal) || [];
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -127,17 +121,18 @@ const MealsPage = () => {
       </div>
 
       {/* Meals List */}
-      <InfiniteScroll
-        dataLength={allMeals.length}
-        loader={
-          <div className="flex justify-center items-center min-h-screen">
-            <span className="loading loading-spinner loading-lg text-gray-700"></span>
-          </div>
-        }
-      >
+      {isLoading ? (
+        <div className="flex justify-center items-center min-h-screen">
+          <span className="loading loading-spinner loading-lg text-gray-700"></span>
+        </div>
+      ) : isError ? (
+        <p className="text-center text-lg font-semibold text-red-600">
+          Failed to load meals
+        </p>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allMeals?.length > 0 ? (
-            allMeals.map((meal) => (
+          {meals.length > 0 ? (
+            meals.map((meal) => (
               <div
                 key={meal?._id}
                 className="card bg-white hover:shadow-xl transition-all transform hover:scale-105"
@@ -164,7 +159,7 @@ const MealsPage = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-sm mt-2 text-gray-600">
-                      Rating: {meal?.rating}
+                      Rating: {meal?.retting}
                     </p>
                   </div>
                   <Link
@@ -184,7 +179,7 @@ const MealsPage = () => {
             </p>
           )}
         </div>
-      </InfiniteScroll>
+      )}
     </div>
   );
 };
