@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
+import InfiniteScroll from "react-infinite-scroller";
 
 const MealsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -9,37 +10,34 @@ const MealsPage = () => {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
   const axiosPublic = useAxiosPublic();
 
-  // Fetch meals using tanstack-query
-  const {
-    data: meals = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["meals", searchQuery, category, priceRange],
-    queryFn: async () => {
-      const response = await axiosPublic("/all-meals", {
-        params: {
-          search: searchQuery,
-          category: category,
-          minPrice: priceRange.min,
-          maxPrice: priceRange.max,
-        },
-      });
+  // Fetch meals with pagination using infiniteQuery
+  const { data, fetchNextPage, hasNextPage, isLoading, isError } =
+    useInfiniteQuery({
+      queryKey: ["meals", searchQuery, category, priceRange],
+      queryFn: async ({ pageParam = 1 }) => {
+        const response = await axiosPublic("/all-meals", {
+          params: {
+            search: searchQuery,
+            category: category,
+            minPrice: priceRange.min,
+            maxPrice: priceRange.max,
+            page: pageParam, // New: Pagination
+            limit: 6, // Load 6 meals per request
+          },
+        });
 
-      return response.data;
-    },
-  });
+        return response.data;
+      },
+      getNextPageParam: (lastPage, allPages) => {
+        return lastPage.length === 6 ? allPages.length + 1 : undefined;
+      },
+    });
 
-  console.log(meals);
+  // Flatten paginated meals data
+  const meals = data?.pages.flat() || [];
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleCategoryChange = (e) => {
-    setCategory(e.target.value);
-  };
-
+  const handleSearch = (e) => setSearchQuery(e.target.value);
+  const handleCategoryChange = (e) => setCategory(e.target.value);
   const handlePriceRangeChange = (e) => {
     const { name, value } = e.target;
     setPriceRange((prev) => ({ ...prev, [name]: value }));
@@ -120,7 +118,7 @@ const MealsPage = () => {
         </div>
       </div>
 
-      {/* Meals List */}
+      {/* Meals List with Infinite Scroll */}
       {isLoading ? (
         <div className="flex justify-center items-center min-h-screen">
           <span className="loading loading-spinner loading-lg text-gray-700"></span>
@@ -130,55 +128,66 @@ const MealsPage = () => {
           Failed to load meals
         </p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {meals.length > 0 ? (
-            meals.map((meal) => (
-              <div
-                key={meal?._id}
-                className="card bg-white hover:shadow-xl transition-all transform hover:scale-105"
-              >
-                <figure>
-                  <img
-                    src={meal?.image}
-                    alt={meal?.title}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                </figure>
-                <div className="card-body p-4">
-                  <h2 className="text-xl font-semibold text-gray-800">
-                    {meal?.title}
-                  </h2>
-                  <p className="text-sm text-gray-600">{meal?.description}</p>
-                  <div className="flex justify-between items-center mt-4">
-                    <span className="text-lg font-bold text-gray-800">
-                      ${meal?.price}
-                    </span>
-                    <span className="badge badge-secondary">
-                      {meal?.category}
-                    </span>
+        <InfiniteScroll
+          pageStart={0}
+          loadMore={fetchNextPage}
+          hasMore={hasNextPage}
+          loader={
+            <div className="text-center my-4">
+              <span className="loading loading-spinner text-gray-700"></span>
+            </div>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {meals.length > 0 ? (
+              meals.map((meal) => (
+                <div
+                  key={meal?._id}
+                  className="card bg-white hover:shadow-xl transition-all transform hover:scale-105"
+                >
+                  <figure>
+                    <img
+                      src={meal?.image}
+                      alt={meal?.title}
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                  </figure>
+                  <div className="card-body p-4">
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {meal?.title}
+                    </h2>
+                    <p className="text-sm text-gray-600">{meal?.description}</p>
+                    <div className="flex justify-between items-center mt-4">
+                      <span className="text-lg font-bold text-gray-800">
+                        ${meal?.price}
+                      </span>
+                      <span className="badge badge-secondary">
+                        {meal?.category}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm mt-2 text-gray-600">
+                        Rating: {meal?.rating}
+                      </p>
+                    </div>
+                    <Link
+                      to={`/meals/${meal?._id}`}
+                      className="right-4 bottom-2 absolute"
+                    >
+                      <button className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
+                        View Details
+                      </button>
+                    </Link>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm mt-2 text-gray-600">
-                      Rating: {meal?.retting}
-                    </p>
-                  </div>
-                  <Link
-                    to={`/meals/${meal?._id}`}
-                    className="right-4 bottom-2 absolute"
-                  >
-                    <button className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
-                      View Details
-                    </button>
-                  </Link>
                 </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-lg font-semibold text-gray-600">
-              No meals found
-            </p>
-          )}
-        </div>
+              ))
+            ) : (
+              <p className="text-center text-lg font-semibold text-gray-600">
+                No meals found
+              </p>
+            )}
+          </div>
+        </InfiniteScroll>
       )}
     </div>
   );
