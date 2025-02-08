@@ -90,7 +90,7 @@ Your ultimate **Hostel Management System** for universities! Built with the robu
 ## 📂 Repository
 
 - **Frontend Code**: [Hostel Pro Frontend](https://github.com/salman679/Hostel-Pro.git)
-- **Backend Code**: [Hostel Pro Backend](https://github.com/salman679/Hostel-Pro.git)
+- **Backend Code**: [Hostel Pro Backend](https://github.com/salman679/Hostel-Pro-server.git)
 
 ---
 
