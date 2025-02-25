@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
-import logo from "../../../assets/logo-removebg-preview.png";
+import logo from "../../../assets/hostel-pro-high-resolution-logo-grayscale-transparent.png";
 
 export default function Footer() {
   return (
@@ -14,7 +14,11 @@ export default function Footer() {
                 to="/"
                 className="flex items-center justify-center md:justify-start"
               >
-                <img src={logo} alt="Logo" className="w-24 h-24 mr-2" />
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className="max-w-24 lg:max-w-32 mr-2"
+                />
               </Link>
             </div>
             <p className="ml-2 text-sm text-gray-200">

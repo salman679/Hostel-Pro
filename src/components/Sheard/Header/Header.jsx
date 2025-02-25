@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../../../assets/logo-removebg-preview.png";
+import logo from "../../../assets/hostel-pro-high-resolution-logo-transparent.png";
 import { useAuth } from "../../../contexts/AuthContext";
 import Swal from "sweetalert2";
 
@@ -19,7 +19,7 @@ export default function Header() {
   };
 
   return (
-    <header className="container mx-auto px-4 lg:px-10">
+    <header className="container mx-auto px-4 lg:px-10 my-2">
       <nav className="navbar bg-white p-0">
         <div className="navbar-start">
           <div className="dropdown">
@@ -160,7 +160,7 @@ export default function Header() {
             </div>
           ) : (
             <Link to="/auth/login">
-              <button className="btn bg-green-600 hover:bg-green-700 text-white">
+              <button className="pt-1 pb-2 rounded px-4 bg-green-600 hover:bg-green-700 text-white">
                 Join Us
               </button>
             </Link>
