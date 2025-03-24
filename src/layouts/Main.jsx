@@ -6,7 +6,7 @@ export default function Main() {
   return (
     <>
       <Header />
-      <main className="container mx-auto px-10">
+      <main className="container mx-auto ">
         <Outlet />
       </main>
       <Footer />

@@ -2,10 +2,30 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../../../assets/hostel-pro-high-resolution-logo-transparent.png";
 import { useAuth } from "../../../contexts/AuthContext";
 import Swal from "sweetalert2";
+import { Bell, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const { user, logOut } = useAuth();
   const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 0
+  );
+
+  // Handle window resize for responsive design
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -19,58 +39,11 @@ export default function Header() {
   };
 
   return (
-    <header className="container mx-auto px-4 lg:px-10 my-2">
-      <nav className="navbar bg-white p-0">
-        <div className="navbar-start">
-          <div className="dropdown">
-            <button
-              tabIndex={0}
-              className="btn btn-ghost lg:hidden"
-              aria-label="Open navigation menu"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h8m-8 6h16"
-                />
-              </svg>
-            </button>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content bg-white rounded-box z-10 mt-3 w-52 p-2 shadow-lg"
-            >
-              <li>
-                <Link to="/" className="text-green-600 hover:text-green-800">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/meals"
-                  className="text-green-600 hover:text-green-800"
-                >
-                  Meals
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/meals/upcoming-meals"
-                  className="text-green-600 hover:text-green-800"
-                >
-                  Upcoming Meals
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div className="text-xl">
+    <nav className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <div className="flex items-center ">
             <Link to="/">
               <img
                 src={logo}
@@ -79,94 +52,130 @@ export default function Header() {
               />
             </Link>
           </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex  space-x-6 ml-10">
+            <Link
+              href="/"
+              className="text-gray-700 hover:text-primary font-medium"
+            >
+              Home
+            </Link>
+            <Link
+              to="/meals"
+              className="text-gray-700 hover:text-primary font-medium"
+            >
+              Meals
+            </Link>
+            <Link
+              to="/meals/upcoming-meals"
+              className="text-gray-700 hover:text-primary font-medium"
+            >
+              Upcoming Meals
+            </Link>
+          </div>
+          {/* Right side navigation */}
+          <div className="flex items-center space-x-4">
+            <button className="text-gray-700 hover:text-primary">
+              <Bell size={20} />
+            </button>
+
+            {user ? (
+              <div className="relative">
+                <button
+                  className="flex items-center space-x-2"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                    <span className="text-sm">
+                      {user?.displayName.charAt(0)}
+                    </span>
+                  </div>
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                    <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                      {user?.displayName}
+                    </div>
+
+                    <Link
+                      to={`/dashboard`}
+                      state={{ email: user?.email }}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        handleLogout();
+                        // setIsLoggedIn(false);
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link to={"/auth/login"}>
+                <button className="bg-primary hover:bg-green-600 text-white px-4 py-2 rounded-md hidden sm:block">
+                  Join Us
+                </button>
+              </Link>
+            )}
+
+            {/* Mobile menu button */}
+            <button
+              className="md:hidden text-gray-700 hover:text-primary"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
-        <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal px-1">
-            <li>
-              <Link to="/" className="text-green-600 hover:text-green-800">
+
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-white py-4 px-2 absolute top-full left-0 right-0 shadow-md z-50">
+            <div className="flex flex-col space-y-3">
+              <Link
+                to="/"
+                className="text-gray-700 hover:text-primary font-medium px-4 py-2 hover:bg-gray-50 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 Home
               </Link>
-            </li>
-            <li>
-              <Link to="/meals" className="text-green-600 hover:text-green-800">
+              <Link
+                to="/meals"
+                className="text-gray-700 hover:text-primary font-medium px-4 py-2 hover:bg-gray-50 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 Meals
               </Link>
-            </li>
-            <li>
               <Link
                 to="/meals/upcoming-meals"
-                className="text-green-600 hover:text-green-800"
+                className="text-gray-700 hover:text-primary font-medium px-4 py-2 hover:bg-gray-50 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Upcoming Meals
               </Link>
-            </li>
-          </ul>
-        </div>
-        <div className="navbar-end flex items-center">
-          <button
-            className="btn btn-ghost btn-circle mr-3"
-            aria-label="Notifications"
-          >
-            <div className="indicator">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-              <span className="badge badge-xs badge-primary indicator-item"></span>
+              {!user && (
+                <Link to={"/auth/login"}>
+                  <button
+                    className="bg-primary hover:bg-green-400 text-white px-4 py-2 rounded-md text-left mx-4 mt-2"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    Join Us
+                  </button>
+                </Link>
+              )}
             </div>
-          </button>
-          {user ? (
-            <div className="dropdown dropdown-end">
-              <div
-                tabIndex={0}
-                role="button"
-                className="btn btn-ghost btn-circle avatar"
-              >
-                <div className="w-10 rounded-full">
-                  <img
-                    alt="Tailwind CSS Navbar component"
-                    src={
-                      user.photoURL || "https://i.ibb.co.com/HBx04n5/images.jpg"
-                    }
-                  />
-                </div>
-              </div>
-              <ul
-                tabIndex={0}
-                className="menu menu-sm z-50 dropdown-content bg-base-100 rounded-box mt-3 w-52 p-2 shadow"
-              >
-                <li>
-                  <a className="justify-between">{user.displayName}</a>
-                </li>
-                <li>
-                  <Link to={`/dashboard`} state={{ email: user.email }}>
-                    Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <button onClick={handleLogout}>Logout</button>
-                </li>
-              </ul>
-            </div>
-          ) : (
-            <Link to="/auth/login">
-              <button className="pt-1 pb-2 rounded px-4 bg-green-600 hover:bg-green-700 text-white">
-                Join Us
-              </button>
-            </Link>
-          )}
-        </div>
-      </nav>
-    </header>
+          </div>
+        )}
+      </div>
+    </nav>
   );
 }

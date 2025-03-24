@@ -1,13 +1,18 @@
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import { motion } from "motion/react";
 import PropTypes from "prop-types";
-
+import { useCallback, useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-export default function Slider({ searchQuery, setSearchQuery }) {
+export default function Slider() {
+  const [, setIsMobileMenuOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 0
+  );
+
   const banners = [
     {
       title: "Streamline Hostel Life with Ease",
@@ -30,79 +35,125 @@ export default function Slider({ searchQuery, setSearchQuery }) {
     },
   ];
 
-  return (
-    <div className="">
-      <div className="container mx-auto px-4 md:px-6 ">
-        <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
-          navigation
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 3000, disableOnInteraction: false }}
-          loop={true}
-          className="rounded-lg overflow-hidden"
-        >
-          {banners.map((banner, index) => (
-            <SwiperSlide key={index}>
-              <div
-                className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-cover bg-center"
-                style={{ backgroundImage: `url(${banner.image})` }}
-              >
-                <div className="absolute inset-0 bg-black text-left bg-opacity-50 flex items-center justify-center ">
-                  <div className="text-left w-full px-14 md:px-24">
-                    <motion.h2
-                      animate={{ opacity: 1, y: [-50, 0] }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        repeatType: "mirror",
-                      }}
-                      initial={{ opacity: 0, y: -50 }}
-                      className="text-3xl  sm:text-5xl md:text-6xl lg:text-7xl text-white font-bold max-w-xs md:max-w-lg"
-                    >
-                      {banner.title}
-                    </motion.h2>
-                    <motion.p
-                      animate={{ opacity: 1, x: [-50, 0] }}
-                      initial={{ opacity: 0, x: -50 }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        repeatType: "mirror",
-                      }}
-                      className="text-white  text-lg sm:text-xl md:text-2xl mt-2 max-w-xs  md:max-w-xl"
-                    >
-                      {banner.description}
-                    </motion.p>
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
 
-                    <label className="input input-bordered flex items-center gap-2 max-w-[300px] mt-5">
-                      <input
-                        type="text"
-                        className="grow"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search"
-                      />
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 16 16"
-                        fill="currentColor"
-                        className="h-4 w-4 opacity-70"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Banner slider automation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [banners.length]);
+
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
+  }, [banners.length]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
+  }, [banners.length]);
+
+  const goToSlide = useCallback((index) => {
+    setCurrentSlide(index);
+  }, []);
+
+  return (
+    <section className="relative bg-gray-50 h-[350px] sm:h-[400px] md:h-[500px]">
+      <div className="absolute inset-0 overflow-hidden rounded-lg">
+        {banners.map((banner, index) => (
+          <div
+            key={banner.id}
+            className={`absolute inset-0 transition-opacity duration-500 ${
+              index === currentSlide
+                ? "opacity-100"
+                : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <img
+              src={banner.image || "/placeholder.svg"}
+              alt={banner.title}
+              className="object-cover w-full h-full"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          </div>
+        ))}
       </div>
-    </div>
+
+      {/* Slider content */}
+      <div className="relative container  mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+        {banners.map((banner, index) => (
+          <div
+            key={banner.id}
+            className={`w-full transition-opacity duration-500 ${
+              index === currentSlide
+                ? "opacity-100"
+                : "opacity-0 absolute pointer-events-none"
+            }`}
+          >
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-2 sm:mb-4">
+              {banner.title}
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl text-white mb-4 sm:mb-8  px-2">
+              {banner.description}
+            </p>
+          </div>
+        ))}
+
+        <div className="flex w-full max-w-xs sm:max-w-md mt-4">
+          <input
+            type="text"
+            placeholder="Search for meals..."
+            className="flex-grow px-3 sm:px-4 py-2 sm:py-3 rounded-l-md focus:outline-none text-sm sm:text-base"
+          />
+          <button className="bg-primary hover:bg-green-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-r-md flex items-center">
+            <Search size={windowWidth < 640 ? 16 : 20} />
+            <span className="ml-2 hidden sm:inline">Search</span>
+          </button>
+        </div>
+
+        {/* Slider navigation */}
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center">
+          <div className="flex space-x-1">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`slider-dot ${
+                  index === currentSlide ? "active" : ""
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Slider arrows */}
+        <button
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-30 hover:bg-opacity-50 rounded-full p-2 text-white"
+          onClick={prevSlide}
+          aria-label="Previous slide"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <button
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-30 hover:bg-opacity-50 rounded-full p-2 text-white"
+          onClick={nextSlide}
+          aria-label="Next slide"
+        >
+          <ChevronRight size={24} />
+        </button>
+      </div>
+    </section>
   );
 }
 
