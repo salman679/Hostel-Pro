@@ -56,19 +56,19 @@ export default function Header() {
           <div className="hidden md:flex  space-x-6 ml-10">
             <Link
               href="/"
-              className="text-black hover:text-primary font-medium"
+              className="text-gray-600 hover:text-primary font-medium"
             >
               Home
             </Link>
             <Link
               to="/meals"
-              className="text-black hover:text-primary font-medium"
+              className="text-gray-600 hover:text-primary font-medium"
             >
               Meals
             </Link>
             <Link
               to="/meals/upcoming-meals"
-              className="text-black hover:text-primary font-medium"
+              className="text-gray-600 hover:text-primary font-medium"
             >
               Upcoming Meals
             </Link>
@@ -86,9 +86,17 @@ export default function Header() {
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
-                    <span className="text-sm">
-                      {user?.displayName.charAt(0)}
-                    </span>
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt="User"
+                        className="w-full h-full rounded-full"
+                      />
+                    ) : (
+                      <span className="text-sm">
+                        {user?.displayName.charAt(0)}
+                      </span>
+                    )}
                   </div>
                 </button>
 

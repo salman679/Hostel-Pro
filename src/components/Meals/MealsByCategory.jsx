@@ -165,7 +165,7 @@ export default function MealsByCategory() {
                           className="text-yellow-500 fill-yellow-500"
                         />
                         <span className="ml-1 text-xs sm:text-sm font-medium">
-                          {meal.rating}
+                          {meal.rating.toFixed(1)}
                         </span>
                       </div>
                     </div>

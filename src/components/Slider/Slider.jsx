@@ -151,10 +151,10 @@ export default function Slider({ searchQuery, setSearchQuery }) {
                   : "opacity-0 absolute pointer-events-none"
               }`}
             >
-              <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-4 px-2 sm:px-6 md:px-10 leading-tight">
+              <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-7xl font-bold text-white mb-2 sm:mb-4 px-2 sm:px-6 md:px-10 leading-tight">
                 {banner.title}
               </h1>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white mb-4 sm:mb-6 md:mb-8 px-4 sm:px-10 md:px-16 max-w-3xl mx-auto">
+              <p className="text-sm sm:text-base md:text-lg lg:text-2xl text-white mb-4 sm:mb-6 md:mb-8 px-4 sm:px-10 md:px-16 max-w-3xl mx-auto">
                 {banner.description}
               </p>
             </div>
@@ -188,9 +188,9 @@ export default function Slider({ searchQuery, setSearchQuery }) {
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
+                  className={`w-1 h-1 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                     index === currentSlide
-                      ? "bg-green-500 w-4 sm:w-6"
+                      ? "bg-green-500 w-3 sm:w-6"
                       : "bg-white bg-opacity-60 hover:bg-opacity-80"
                   }`}
                   aria-label={`Go to slide ${index + 1}`}

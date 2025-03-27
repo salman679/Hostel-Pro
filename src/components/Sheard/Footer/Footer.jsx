@@ -7,12 +7,6 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
           <div>
             <div className="flex items-center mb-3 sm:mb-4">
-              {/* <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                HP
-              </div>
-              <span className="ml-2 text-lg sm:text-xl font-bold">
-                Hostel Pro
-              </span> */}
               <div className="w-36">
                 <img src={logo} alt="Logo" />
               </div>
@@ -22,7 +16,7 @@ export default function Footer() {
               excellent service.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white">
+              <a href="#" className="text-gray-400 hover:text-[#22C35D]">
                 <svg
                   className="w-5 h-5 sm:w-6 sm:h-6"
                   fill="currentColor"
@@ -36,7 +30,7 @@ export default function Footer() {
                   ></path>
                 </svg>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white">
+              <a href="#" className="text-gray-400 hover:text-[#22C35D]">
                 <svg
                   className="w-5 h-5 sm:w-6 sm:h-6"
                   fill="currentColor"
@@ -50,7 +44,7 @@ export default function Footer() {
                   ></path>
                 </svg>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white">
+              <a href="#" className="text-gray-400 hover:text-[#22C35D]">
                 <svg
                   className="w-5 h-5 sm:w-6 sm:h-6"
                   fill="currentColor"

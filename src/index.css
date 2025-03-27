@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================
+   Base Styles & Variables
+   ========================== */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -13,18 +16,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Lighter Green as primary color - fresh and healthy */
+    /* Primary & Secondary Colors */
     --primary: 142 70% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Very light green as secondary color */
     --secondary: 142 70% 95%;
     --secondary-foreground: 142 70% 45%;
 
+    /* Supporting Colors */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    /* Subtle accent for premium features */
     --accent: 142 30% 90%;
     --accent-foreground: 142 70% 45%;
 
@@ -41,28 +42,18 @@
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 142 70% 45%;
-    --primary-foreground: 0 0% 100%;
-
     --secondary: 142 70% 20%;
     --secondary-foreground: 0 0% 100%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 142 30% 25%;
     --accent-foreground: 0 0% 100%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 142 70% 45%;
@@ -78,18 +69,57 @@
   }
 }
 
+/* ==========================
+   UI Components & Utilities
+   ========================== */
+
+/* Slider Dots */
 .slider-dot {
   @apply w-2 h-2 rounded-full bg-gray-300 mx-1 cursor-pointer transition-all duration-300;
 }
-
 .slider-dot.active {
   @apply bg-primary w-4;
 }
 
-.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+/* Hide Scrollbar */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
+/* Responsive Category Tabs */
+@media (max-width: 640px) {
+  .category-tabs-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+}
+
+/* Responsive Meal Cards */
+@media (max-width: 480px) {
+  .meal-card-title {
+    font-size: 0.95rem;
+  }
+  .meal-card-description {
+    font-size: 0.8rem;
+  }
+  .meal-card-price {
+    font-size: 0.9rem;
+  }
+  .meal-card-button {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* ==========================
+   Animations
+   ========================== */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -101,103 +131,80 @@
   }
 }
 
-/* Add this to your CSS to hide scrollbars but keep functionality */
-.hide-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
 }
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
-}
-
-/* Smooth transitions for category tabs */
-@media (max-width: 640px) {
-  .category-tabs-container {
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 8px;
-  }
-}
-
-/* Responsive card adjustments */
-@media (max-width: 480px) {
-  .meal-card-title {
-    font-size: 0.95rem;
-  }
-
-  .meal-card-description {
-    font-size: 0.8rem;
-  }
-
-  .meal-card-price {
-    font-size: 0.9rem;
-  }
-
-  .meal-card-button {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.5rem;
-  }
-}
-
-/* Slider dot styling */
-.slider-dot {
-  @apply w-2 h-2 rounded-full bg-white bg-opacity-60 mx-1 cursor-pointer transition-all duration-300;
-}
-
-.slider-dot.active {
-  @apply bg-green-500 w-4;
-}
-
-/* Responsive slider adjustments */
-@media (max-width: 640px) {
-  .slider-dot {
-    width: 8px;
-    height: 8px;
-  }
-
-  .slider-dot.active {
-    width: 16px;
-  }
-}
-
-/* Touch-friendly slider controls */
-@media (hover: none) {
-  .slider-arrow {
-    padding: 12px;
-  }
-}
-
-/* Slider animations */
+/* Slider Animations */
 .slide-enter {
   opacity: 0;
   transform: scale(0.9);
 }
-
 .slide-enter-active {
   opacity: 1;
   transform: scale(1);
   transition: opacity 500ms, transform 500ms;
 }
-
 .slide-exit {
   opacity: 1;
 }
-
 .slide-exit-active {
   opacity: 0;
   transition: opacity 500ms;
 }
 
-/* Improve performance */
-.slider-image {
-  will-change: transform;
-  backface-visibility: hidden;
+/* Loading Spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.loading-spinner {
+  animation: spin 1s linear infinite;
 }
 
-/* Prevent text selection during swipe */
-.slider-container {
-  user-select: none;
-  -webkit-user-select: none;
+/* ==========================
+   Accessibility & UX Enhancements
+   ========================== */
+input:focus,
+select:focus,
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+}
+
+.filter-transition {
+  transition: all 0.3s ease;
+}
+
+/* ==========================
+   Scrollbar Styles
+   ========================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Responsive Text Adjustments */
+@media (max-width: 640px) {
+  .filter-label {
+    font-size: 0.875rem;
+  }
+  .meal-title {
+    font-size: 1.1rem;
+  }
+  .meal-price {
+    font-size: 1rem;
+  }
 }

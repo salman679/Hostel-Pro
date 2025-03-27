@@ -10,8 +10,9 @@ export default function AdminRoute({ children }) {
 
   if (loading || isAdminLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <progress className="progress w-56"></progress>
+      <div className="col-span-full flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
+        <span className="ml-2 text-gray-600">Loading...</span>
       </div>
     );
   }
