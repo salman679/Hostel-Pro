@@ -100,3 +100,104 @@
     transform: translateY(0);
   }
 }
+
+/* Add this to your CSS to hide scrollbars but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Smooth transitions for category tabs */
+@media (max-width: 640px) {
+  .category-tabs-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+}
+
+/* Responsive card adjustments */
+@media (max-width: 480px) {
+  .meal-card-title {
+    font-size: 0.95rem;
+  }
+
+  .meal-card-description {
+    font-size: 0.8rem;
+  }
+
+  .meal-card-price {
+    font-size: 0.9rem;
+  }
+
+  .meal-card-button {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Slider dot styling */
+.slider-dot {
+  @apply w-2 h-2 rounded-full bg-white bg-opacity-60 mx-1 cursor-pointer transition-all duration-300;
+}
+
+.slider-dot.active {
+  @apply bg-green-500 w-4;
+}
+
+/* Responsive slider adjustments */
+@media (max-width: 640px) {
+  .slider-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .slider-dot.active {
+    width: 16px;
+  }
+}
+
+/* Touch-friendly slider controls */
+@media (hover: none) {
+  .slider-arrow {
+    padding: 12px;
+  }
+}
+
+/* Slider animations */
+.slide-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.slide-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 500ms, transform 500ms;
+}
+
+.slide-exit {
+  opacity: 1;
+}
+
+.slide-exit-active {
+  opacity: 0;
+  transition: opacity 500ms;
+}
+
+/* Improve performance */
+.slider-image {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Prevent text selection during swipe */
+.slider-container {
+  user-select: none;
+  -webkit-user-select: none;
+}

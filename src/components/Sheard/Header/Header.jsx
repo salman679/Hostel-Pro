@@ -39,7 +39,7 @@ export default function Header() {
   };
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className=" shadow-sm sticky top-0 z-50 backdrop-blur">
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -56,19 +56,19 @@ export default function Header() {
           <div className="hidden md:flex  space-x-6 ml-10">
             <Link
               href="/"
-              className="text-gray-700 hover:text-primary font-medium"
+              className="text-black hover:text-primary font-medium"
             >
               Home
             </Link>
             <Link
               to="/meals"
-              className="text-gray-700 hover:text-primary font-medium"
+              className="text-black hover:text-primary font-medium"
             >
               Meals
             </Link>
             <Link
               to="/meals/upcoming-meals"
-              className="text-gray-700 hover:text-primary font-medium"
+              className="text-black hover:text-primary font-medium"
             >
               Upcoming Meals
             </Link>
@@ -119,7 +119,7 @@ export default function Header() {
               </div>
             ) : (
               <Link to={"/auth/login"}>
-                <button className="bg-primary hover:bg-green-600 text-white px-4 py-2 rounded-md hidden sm:block">
+                <button className="bg-primary text-white px-4 py-2 rounded-md hidden sm:block">
                   Join Us
                 </button>
               </Link>
