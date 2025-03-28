@@ -43,7 +43,7 @@ export default function Home() {
       </div>
 
       {/* Membership Plans Section - Enhanced */}
-      <div className="bg-white py-2">
+      <div className="bg-white py-2" id="meals-plans">
         <Membership />
       </div>
 

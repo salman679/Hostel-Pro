@@ -11,6 +11,12 @@ import {
 } from "lucide-react";
 
 export default function Footer() {
+  // Smooth scroll to meals section
+  const scrollToMealsPlans = () => {
+    document.getElementById("meals-plans")?.scrollIntoView({
+      behavior: "smooth",
+    });
+  };
   return (
     <footer className="bg-gray-900 text-white pt-16 pb-8 relative overflow-hidden">
       {/* Background decoration */}
@@ -97,7 +103,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  to="/checkout"
+                  onClick={scrollToMealsPlans}
                   className="text-gray-400 hover:text-green-400 transition-colors duration-300 flex items-center"
                 >
                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
