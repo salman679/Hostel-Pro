@@ -561,7 +561,7 @@ const MealsPage = () => {
                               className="text-yellow-500 fill-yellow-500"
                             />
                             <span className="ml-1 text-sm font-medium">
-                              {meal?.rating.toFixed(1)}
+                              {meal?.rating?.toFixed(1)}
                             </span>
                           </div>
                         </div>
@@ -573,7 +573,7 @@ const MealsPage = () => {
                           <span className="text-lg font-bold text-green-500">
                             $
                             {typeof meal?.price === "number"
-                              ? meal?.price.toFixed(2)
+                              ? meal?.price?.toFixed(2)
                               : meal?.price}
                           </span>
                           <Link
@@ -634,7 +634,7 @@ const MealsPage = () => {
                           <span className="text-lg font-bold text-green-500">
                             $
                             {typeof meal?.price === "number"
-                              ? meal?.price.toFixed(2)
+                              ? meal?.price?.toFixed(2)
                               : meal?.price}
                           </span>
                           <Link

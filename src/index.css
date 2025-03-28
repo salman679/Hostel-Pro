@@ -10,42 +10,40 @@
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --card: var(--background);
+    --card-foreground: var(--foreground);
+    --popover: var(--background);
+    --popover-foreground: var(--foreground);
 
     /* Primary & Secondary Colors */
     --primary: 142 70% 45%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 142 70% 95%;
-    --secondary-foreground: 142 70% 45%;
+    --secondary-foreground: var(--primary);
 
     /* Supporting Colors */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 142 30% 90%;
-    --accent-foreground: 142 70% 45%;
+    --accent-foreground: var(--primary);
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 70% 45%;
-
+    --input: var(--border);
+    --ring: var(--primary);
     --radius: 0.5rem;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --card: var(--background);
+    --card-foreground: var(--foreground);
+    --popover: var(--background);
+    --popover-foreground: var(--foreground);
     --secondary: 142 70% 20%;
     --secondary-foreground: 0 0% 100%;
     --muted: 217.2 32.6% 17.5%;
@@ -54,16 +52,15 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 70% 45%;
+    --border: var(--muted);
+    --input: var(--muted);
+    --ring: var(--primary);
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -93,10 +90,8 @@
 /* Responsive Category Tabs */
 @media (max-width: 640px) {
   .category-tabs-container {
-    overflow-x: auto;
-    white-space: nowrap;
+    @apply overflow-x-auto whitespace-nowrap pb-2;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 8px;
   }
 }
 
@@ -120,6 +115,7 @@
 /* ==========================
    Animations
    ========================== */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -130,7 +126,6 @@
     transform: translateY(0);
   }
 }
-
 .fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }
@@ -144,9 +139,6 @@
   opacity: 1;
   transform: scale(1);
   transition: opacity 500ms, transform 500ms;
-}
-.slide-exit {
-  opacity: 1;
 }
 .slide-exit-active {
   opacity: 0;
@@ -163,23 +155,22 @@
   animation: spin 1s linear infinite;
 }
 
-/* ==========================
-   Accessibility & UX Enhancements
-   ========================== */
-input:focus,
-select:focus,
-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+/* Button Hover Effects */
+.btn-primary {
+  transition: all 0.2s ease;
 }
-
-.filter-transition {
-  transition: all 0.3s ease;
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 /* ==========================
    Scrollbar Styles
    ========================== */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -196,7 +187,10 @@ button:focus {
   background: #a1a1a1;
 }
 
-/* Responsive Text Adjustments */
+/* ==========================
+   Responsive Text Adjustments
+   ========================== */
+
 @media (max-width: 640px) {
   .filter-label {
     font-size: 0.875rem;
@@ -207,4 +201,79 @@ button:focus {
   .meal-price {
     font-size: 1rem;
   }
+}
+
+/* ==========================
+   UI Enhancements
+   ========================== */
+
+/* Hover Scale */
+.hover-scale {
+  transition: transform 0.3s ease-in-out;
+}
+.hover-scale:hover {
+  transform: scale(1.03);
+}
+
+/* Header animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+/* Hover Effects for Navigation */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  background-color: var(--primary);
+  transition: all 0.3s ease;
+}
+.nav-link:hover::after {
+  width: 80%;
+  left: 10%;
+}
+
+/* Footer animations */
+.social-icon {
+  transition: all 0.3s ease;
+}
+.social-icon:hover {
+  transform: translateY(-3px);
+}
+
+/* ==========================
+   Form & UI Improvements
+   ========================== */
+
+/* Auth Form */
+.auth-form {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Payment Button */
+.payment-btn {
+  transition: all 0.2s ease;
+}
+.payment-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.payment-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
