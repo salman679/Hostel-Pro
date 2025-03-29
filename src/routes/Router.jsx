@@ -23,6 +23,10 @@ import Reviews from "../components/Dashboard/User/Reviews";
 import PaymentHistory from "../components/Dashboard/User/PaymentHistory";
 import Welcome from "../components/Dashboard/Welcome";
 import ServeMeals from "../components/Dashboard/Admin/ServeMeals";
+import ContactUs from "../pages/ContactUs";
+import PrivacyPage from "../pages/PrivacyPage";
+import Terms from "../pages/Terms";
+import FAQ from "../pages/FAQ";
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +58,22 @@ export const router = createBrowserRouter([
       {
         path: "checkout/:id",
         element: <Payment />,
+      },
+      {
+        path: "contact-us",
+        element: <ContactUs />,
+      },
+      {
+        path: "privacy-policy",
+        element: <PrivacyPage />,
+      },
+      {
+        path: "terms-and-conditions",
+        element: <Terms />,
+      },
+      {
+        path: "faq",
+        element: <FAQ />,
       },
       {
         path: "auth",

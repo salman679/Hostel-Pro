@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 const axiosSecure = axios.create({
-  baseURL: "https://server-nine-pearl.vercel.app",
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 export default function useAxiosSecure() {

@@ -112,7 +112,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  to="/contact"
+                  to="/contact-us"
                   className="text-gray-400 hover:text-green-400 transition-colors duration-300 flex items-center"
                 >
                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
@@ -217,13 +217,13 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4">
               <Link
-                to="/privacy"
+                to="/privacy-policy"
                 className="text-gray-400 hover:text-green-400 text-sm"
               >
                 Privacy Policy
               </Link>
               <Link
-                to="/terms"
+                to="/terms-and-conditions"
                 className="text-gray-400 hover:text-green-400 text-sm"
               >
                 Terms of Service
