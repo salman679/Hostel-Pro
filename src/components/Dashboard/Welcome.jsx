@@ -172,7 +172,7 @@ export default function Welcome() {
 
           <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
             <h3 className="text-sm font-medium text-purple-700">Role</h3>
-            <p className="text-2xl font-bold text-purple-800 mt-1">
+            <p className="text-2xl font-bold text-purple-800 mt-1 capitalize">
               {role || "User"}
             </p>
           </div>

@@ -40,6 +40,8 @@ const AllReviews = () => {
     },
   });
 
+  console.log(reviews);
+
   // Filter reviews based on search term
   useEffect(() => {
     if (reviews.length > 0) {

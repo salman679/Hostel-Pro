@@ -44,7 +44,7 @@ export default function AdminProfile() {
         {/* Profile Info */}
         <div className="px-6 pb-6">
           <div className="flex flex-col sm:flex-row sm:items-end -mt-12 sm:-mt-16 mb-6">
-            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white bg-white shadow-md overflow-hidden">
+            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white bg-white shadow-md overflow-hidden z-20">
               <img
                 src={user?.photoURL || "https://i.ibb.co/HBx04n5/images.jpg"}
                 alt={user?.displayName || "Admin"}
@@ -108,7 +108,7 @@ export default function AdminProfile() {
                   <div>
                     <p className="text-sm text-gray-500">Meals Added</p>
                     <p className="text-2xl font-bold text-blue-600">
-                      {isLoading ? "..." : adminStats.count || 0}
+                      {isLoading ? "..." : adminStats.mealsLength || 0}
                     </p>
                   </div>
                 </div>
@@ -136,7 +136,7 @@ export default function AdminProfile() {
             </div>
           </div>
           <p className="text-3xl font-bold text-gray-800">
-            {isLoading ? "..." : adminStats.count || 0}
+            {isLoading ? "..." : adminStats.totalMeals || 0}
           </p>
           <p className="text-sm text-gray-500 mt-1">Meals in the system</p>
         </div>
@@ -149,7 +149,7 @@ export default function AdminProfile() {
             </div>
           </div>
           <p className="text-3xl font-bold text-gray-800">
-            {isLoading ? "..." : adminStats.upcomingCount || 0}
+            {isLoading ? "..." : adminStats.totalUpcomingMeals || 0}
           </p>
           <p className="text-sm text-gray-500 mt-1">Upcoming meals</p>
         </div>
@@ -162,7 +162,7 @@ export default function AdminProfile() {
             </div>
           </div>
           <p className="text-3xl font-bold text-gray-800">
-            {isLoading ? "..." : adminStats.userCount || 0}
+            {isLoading ? "..." : adminStats.totalUsers || 0}
           </p>
           <p className="text-sm text-gray-500 mt-1">Registered users</p>
         </div>
@@ -175,7 +175,7 @@ export default function AdminProfile() {
             </div>
           </div>
           <p className="text-3xl font-bold text-gray-800">
-            {isLoading ? "..." : adminStats.reviewCount || 0}
+            {isLoading ? "..." : adminStats.totalReviews || 0}
           </p>
           <p className="text-sm text-gray-500 mt-1">Total reviews</p>
         </div>

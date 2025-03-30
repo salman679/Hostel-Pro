@@ -409,8 +409,7 @@ export default function ManageUsers() {
           <p className="text-3xl font-bold text-gray-800">
             {
               users.filter(
-                (user) =>
-                  user.subscription && user.subscription !== "Not Subscribed"
+                (user) => user.subscription && user.subscription !== "Bronze"
               ).length
             }
           </p>

@@ -100,7 +100,7 @@ export default function UserProfile() {
         {/* Profile Info */}
         <div className="px-6 pb-6">
           <div className="flex flex-col sm:flex-row sm:items-end -mt-12 sm:-mt-16 mb-6">
-            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white bg-white shadow-md overflow-hidden">
+            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white bg-white shadow-md overflow-hidden z-20">
               <img
                 src={userData?.image || "https://via.placeholder.com/150"}
                 alt={userData?.name || "User"}
