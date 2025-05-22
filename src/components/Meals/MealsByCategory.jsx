@@ -1,10 +1,8 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
-import { ArrowRight, Star, ChevronRight } from "lucide-react";
+import { Star, ChevronRight, Heart } from "lucide-react";
 
 export default function MealsByCategory() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -15,7 +13,7 @@ export default function MealsByCategory() {
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 0
   );
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const { data: meals = [], isLoading } = useQuery({
     queryKey: ["meals", selectedCategory],
@@ -137,59 +135,58 @@ export default function MealsByCategory() {
         ) : (
           <>
             {meals?.length > 0 ? (
-              meals.slice(0, 6).map((meal) => (
+              meals.slice(0, 6).map((meal, index) => (
                 <div
-                  key={meal._id}
-                  className="card shadow-sm hover:shadow-md transition-all ease-in-out duration-300 bg-white rounded-lg border border-gray-100 hover:border-gray-200 overflow-hidden h-full flex flex-col"
+                  key={meal?._id}
+                  className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 animate-fadeIn"
+                  style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  <div className="relative w-full h-40 sm:h-48 lg:h-56">
+                  <div className="relative overflow-hidden">
                     <img
-                      src={meal.image || "/placeholder.svg"}
-                      alt={meal.title}
-                      className="w-full h-full object-cover"
+                      src={meal?.image || "/placeholder.svg"}
+                      alt={meal?.title}
+                      className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                      {meal.category || selectedCategory !== "All"
-                        ? selectedCategory
-                        : "Featured"}
+                    <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                      {meal?.category?.charAt(0).toUpperCase() +
+                        meal?.category?.slice(1)}
                     </div>
+                    <button className="absolute top-3 left-3 bg-white/80 backdrop-blur-sm p-2 rounded-full text-gray-700 hover:text-red-500 transition-colors">
+                      <Heart size={18} />
+                    </button>
                   </div>
-                  <div className="p-3 sm:p-4 flex-grow flex flex-col">
+                  <div className="p-5">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-base sm:text-lg font-medium line-clamp-1">
-                        {meal.title}
-                      </h3>
-                      <div className="flex items-center bg-yellow-50 px-2 py-1 rounded ml-2 flex-shrink-0">
+                      <h2 className="text-xl font-semibold text-gray-800 line-clamp-1 group-hover:text-green-600 transition-colors">
+                        {meal?.title}
+                      </h2>
+                      <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-full">
                         <Star
-                          size={windowWidth < 640 ? 14 : 16}
+                          size={16}
                           className="text-yellow-500 fill-yellow-500"
                         />
-                        <span className="ml-1 text-xs sm:text-sm font-medium">
-                          {meal.rating.toFixed(1)}
+                        <span className="ml-1 text-sm font-medium">
+                          {meal?.rating?.toFixed(1)}
                         </span>
                       </div>
                     </div>
-                    <p className="text-gray-600 mb-3 line-clamp-2 text-xs sm:text-sm flex-grow">
-                      {meal.description}
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {meal?.description ||
+                        "A delicious meal prepared with fresh ingredients by our expert chefs."}
                     </p>
-                    <div className="flex justify-between items-center mt-auto">
-                      <span className="text-sm sm:text-base font-bold text-green-500">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold text-green-500">
                         $
-                        {typeof meal.price === "number"
-                          ? meal.price.toFixed(2)
-                          : meal.price}
+                        {typeof meal?.price === "number"
+                          ? meal?.price?.toFixed(2)
+                          : meal?.price}
                       </span>
-                      <button
-                        onClick={() => navigate(`/meals/${meal._id}`)}
-                        className="bg-green-500 hover:bg-green-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-xs flex items-center"
-                        aria-label={`Order ${meal.title}`}
+                      <Link
+                        to={`/meals/${meal?._id}`}
+                        className="bg-gray-100 hover:bg-green-500 text-gray-700 hover:text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300"
                       >
-                        Order Now
-                        <ArrowRight
-                          size={windowWidth < 640 ? 12 : 14}
-                          className="ml-1"
-                        />
-                      </button>
+                        View Details
+                      </Link>
                     </div>
                   </div>
                 </div>

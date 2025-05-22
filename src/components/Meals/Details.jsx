@@ -31,6 +31,8 @@ export default function MealDetail() {
   const axiosSecure = useAxiosSecure();
   const { user } = useAuth();
 
+  console.log(user);
+
   const {
     data: meal,
     isLoading,
@@ -322,7 +324,7 @@ export default function MealDetail() {
           <div className="flex flex-col md:flex-row gap-8 items-center">
             {/* Image */}
             <div className="w-full md:w-1/2 relative">
-              <div className="aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="w-full h-80 rounded-2xl overflow-hidden shadow-2xl">
                 <img
                   src={meal.image || "/placeholder.svg"}
                   alt={meal.title}
