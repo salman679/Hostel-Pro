@@ -30,7 +30,7 @@ const AllReviews = () => {
     queryFn: async () => {
       try {
         const response = await axios.get(`/meals/reviews`);
-        return response.data;
+        return Array.isArray(response.data) ? response.data : [];
       } catch (error) {
         console.error("Error fetching reviews:", error);
         return []; // Return empty array in case of error
@@ -167,9 +167,9 @@ const AllReviews = () => {
 
   // Use demo data if no reviews are available
   const displayReviews =
-    filteredReviews.length > 0
+    Array.isArray(filteredReviews) && filteredReviews.length > 0
       ? filteredReviews
-      : reviews.length > 0
+      : Array.isArray(reviews) && reviews.length > 0
       ? reviews
       : demoReviews;
 
@@ -284,12 +284,14 @@ const AllReviews = () => {
             <div>
               <p className="text-sm text-gray-500">Average Rating</p>
               <p className="text-2xl font-bold text-gray-800">
-                {(
-                  displayReviews.reduce(
-                    (acc, review) => acc + review.rating,
-                    0
-                  ) / displayReviews.length
-                ).toFixed(1)}
+                {Array.isArray(displayReviews) && displayReviews.length > 0
+                  ? (
+                      displayReviews.reduce(
+                        (acc, review) => acc + review.rating,
+                        0
+                      ) / displayReviews.length
+                    ).toFixed(1)
+                  : "N/A"}
               </p>
             </div>
             <div className="bg-blue-500 p-3 rounded-full">
@@ -303,7 +305,12 @@ const AllReviews = () => {
             <div>
               <p className="text-sm text-gray-500">Total Likes</p>
               <p className="text-2xl font-bold text-gray-800">
-                {displayReviews.reduce((acc, review) => acc + review.likes, 0)}
+                {Array.isArray(displayReviews)
+                  ? displayReviews.reduce(
+                      (acc, review) => acc + review.likes,
+                      0
+                    )
+                  : 0}
               </p>
             </div>
             <div className="bg-purple-500 p-3 rounded-full">
