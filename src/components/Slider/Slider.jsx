@@ -1,237 +1,264 @@
-import { useState } from "react";
-import { Search, X, ArrowRight } from "lucide-react";
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { Search, ArrowRight, Play, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import PropTypes from "prop-types";
+import { gsap } from "gsap";
+import * as THREE from "three";
 
-export default function Slider({ searchQuery, setSearchQuery }) {
+export default function SimpleHero({ searchQuery, setSearchQuery }) {
   const [searchValue, setSearchValue] = useState(searchQuery || "");
+  const heroRef = useRef(null);
+  const titleRef = useRef(null);
+  const subtitleRef = useRef(null);
+  const searchRef = useRef(null);
+  const imageRef = useRef(null);
+  const threeRef = useRef(null);
+  const sceneRef = useRef(null);
 
-  // Handle search submission
+  // Simple Three.js floating elements
+  useEffect(() => {
+    if (!threeRef.current) return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+    threeRef.current.appendChild(renderer.domElement);
+
+    // Create simple floating food icons
+    const geometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const materials = [
+      new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        transparent: true,
+        opacity: 0.6,
+      }),
+      new THREE.MeshBasicMaterial({
+        color: 0x06d6a0,
+        transparent: true,
+        opacity: 0.6,
+      }),
+      new THREE.MeshBasicMaterial({
+        color: 0xf59e0b,
+        transparent: true,
+        opacity: 0.6,
+      }),
+    ];
+
+    const particles = [];
+    for (let i = 0; i < 20; i++) {
+      const particle = new THREE.Mesh(
+        geometry,
+        materials[i % materials.length]
+      );
+      particle.position.set(
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 15,
+        (Math.random() - 0.5) * 10
+      );
+      particle.userData = {
+        originalY: particle.position.y,
+        speed: Math.random() * 0.01 + 0.005,
+        amplitude: Math.random() * 1 + 0.5,
+      };
+      scene.add(particle);
+      particles.push(particle);
+    }
+
+    camera.position.z = 10;
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      particles.forEach((particle) => {
+        particle.position.y =
+          particle.userData.originalY +
+          Math.sin(Date.now() * particle.userData.speed) *
+            particle.userData.amplitude;
+        particle.rotation.x += 0.01;
+        particle.rotation.y += 0.01;
+      });
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (threeRef.current && renderer.domElement) {
+        threeRef.current.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+    };
+  }, []);
+
+  // Simple entrance animations
+  useEffect(() => {
+    const tl = gsap.timeline();
+
+    tl.fromTo(
+      titleRef.current,
+      { y: 50, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }
+    )
+      .fromTo(
+        subtitleRef.current,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+        "-=0.4"
+      )
+      .fromTo(
+        searchRef.current,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+        "-=0.3"
+      )
+      .fromTo(
+        imageRef.current,
+        { x: 50, opacity: 0, scale: 0.9 },
+        { x: 0, opacity: 1, scale: 1, duration: 0.8, ease: "power2.out" },
+        "-=0.6"
+      );
+  }, []);
+
   const handleSearch = (e) => {
     e.preventDefault();
-    if (setSearchQuery && typeof setSearchQuery === "function") {
+    if (setSearchQuery) {
       setSearchQuery(searchValue);
     }
   };
 
-  // Clear search
-  const clearSearch = () => {
-    setSearchValue("");
-    if (setSearchQuery && typeof setSearchQuery === "function") {
-      setSearchQuery("");
-    }
-  };
-
   return (
-    <div className="relative bg-gradient-to-r from-green-600 to-green-500 overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          className="absolute inset-0 w-full h-full"
-        >
-          <defs>
-            <pattern
-              id="grid"
-              width="10"
-              height="10"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 10 0 L 0 0 0 10"
-                fill="none"
-                stroke="white"
-                strokeWidth="0.5"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
+    <div
+      ref={heroRef}
+      className="relative min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden"
+    >
+      {/* Three.js Background */}
+      <div
+        ref={threeRef}
+        className="absolute inset-0 pointer-events-none opacity-30"
+      />
+
+      {/* Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 right-20 w-64 h-64 bg-green-200 rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute bottom-20 left-20 w-80 h-80 bg-emerald-200 rounded-full opacity-20 blur-3xl"></div>
       </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-green-400 rounded-full opacity-20 blur-3xl"></div>
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-green-400 rounded-full opacity-20 blur-3xl"></div>
+      <div className="container mx-auto px-4 py-20 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-12 min-h-[80vh]">
+          {/* Content */}
+          <div className="w-full lg:w-1/2 text-center lg:text-left">
+            {/* Badge */}
+            <div className="inline-flex items-center bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-green-200 mb-6">
+              <Sparkles size={16} className="mr-2 text-green-600" />
+              <span className="text-sm font-medium text-green-700">
+                Fresh • Healthy • Delicious
+              </span>
+            </div>
 
-      <div className="container mx-auto px-4 py-16 md:py-24 lg:py-20 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
-          {/* Left Content */}
-          <div className="w-full lg:w-1/2 text-white">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              Elevate Your Hostel Dining Experience
+            {/* Title */}
+            <h1
+              ref={titleRef}
+              className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight"
+            >
+              Delicious Meals
+              <span className="block text-green-600">Made Simple</span>
             </h1>
-            <p className="text-lg md:text-xl text-green-50 mb-8 max-w-xl">
-              Enjoy delicious, nutritious meals delivered right to your hostel.
-              Manage your meal plans, discover new dishes, and share your
-              experiences.
+
+            {/* Subtitle */}
+            <p
+              ref={subtitleRef}
+              className="text-xl text-gray-600 mb-8 max-w-lg"
+            >
+              Fresh, nutritious meals delivered to your hostel. No fuss, no
+              stress, just great food when you need it.
             </p>
 
-            {/* Search Form */}
-            <form onSubmit={handleSearch} className="mb-8 max-w-md">
-              <div className="relative">
+            {/* Search */}
+            <form ref={searchRef} onSubmit={handleSearch} className="mb-8">
+              <div className="relative max-w-md mx-auto lg:mx-0">
                 <input
                   type="text"
-                  placeholder="Search for meals..."
-                  className="w-full px-5 py-4 pl-12 pr-10 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all"
+                  placeholder="What are you craving today?"
+                  className="w-full px-6 py-4 pl-12 rounded-2xl bg-white border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all duration-200"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                 />
                 <Search
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70"
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
                   size={20}
                 />
-
-                {searchValue && (
-                  <button
-                    type="button"
-                    onClick={clearSearch}
-                    className="absolute right-14 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white transition-colors"
-                  >
-                    <X size={18} />
-                  </button>
-                )}
-
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white text-green-600 p-2 rounded-lg transition-colors hover:bg-green-50"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-600 text-white p-2 rounded-xl hover:bg-green-700 transition-colors"
                 >
-                  <Search size={20} />
+                  <ArrowRight size={16} />
                 </button>
               </div>
             </form>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link
                 to="/meals"
-                className="bg-white text-green-600 hover:bg-green-50 px-6 py-3 rounded-lg font-medium transition-colors flex items-center"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-center"
               >
-                Explore Meals
-                <ArrowRight size={18} className="ml-2" />
+                Browse Meals
+                <ArrowRight size={20} className="ml-2" />
               </Link>
-              <Link
-                to="#meals-plans"
-                className="bg-transparent border border-white text-white hover:bg-white/10 px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                View Plans
-              </Link>
-            </div>
-
-            {/* Stats */}
-            <div className="flex flex-wrap gap-8 mt-12">
-              <div className="text-center">
-                <p className="text-3xl font-bold">500+</p>
-                <p className="text-green-100 text-sm">Meals Available</p>
-              </div>
-              <div className="text-center">
-                <p className="text-3xl font-bold">10k+</p>
-                <p className="text-green-100 text-sm">Happy Students</p>
-              </div>
-              <div className="text-center">
-                <p className="text-3xl font-bold">4.8</p>
-                <p className="text-green-100 text-sm">Average Rating</p>
-              </div>
+              <button className="border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white px-8 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center">
+                <Play size={18} className="mr-2" />
+                Watch Demo
+              </button>
             </div>
           </div>
 
-          {/* Right Content - Image */}
+          {/* Image */}
           <div className="w-full lg:w-1/2">
-            <div className="relative">
-              {/* Main Image */}
-              <img
-                src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
-                alt="Delicious meal spread"
-                className="rounded-2xl shadow-2xl w-full h-auto object-cover"
-              />
+            <div ref={imageRef} className="relative">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Delicious meal"
+                  className="w-full h-96 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              </div>
 
-              {/* Floating Card 1 */}
-              <div className="absolute -top-6 -left-6 md:top-8 md:-left-12 bg-white p-4 rounded-xl shadow-lg hidden sm:block">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-gray-800 font-medium">Fast Delivery</p>
-                    <p className="text-gray-500 text-sm">Within 30 minutes</p>
-                  </div>
+              {/* Floating Stats */}
+              <div className="absolute -top-4 -left-4 bg-white rounded-2xl p-4 shadow-lg">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">4.9★</div>
+                  <div className="text-sm text-gray-600">Rating</div>
                 </div>
               </div>
 
-              {/* Floating Card 2 */}
-              <div className="absolute -bottom-6 -right-6 md:bottom-8 md:-right-12 bg-white p-4 rounded-xl shadow-lg hidden sm:block">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-gray-800 font-medium">Quality Food</p>
-                    <p className="text-gray-500 text-sm">Fresh ingredients</p>
-                  </div>
+              <div className="absolute -bottom-4 -right-4 bg-white rounded-2xl p-4 shadow-lg">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">15min</div>
+                  <div className="text-sm text-gray-600">Delivery</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Wave Divider */}
-      {/* <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 1200 120"
-          preserveAspectRatio="none"
-          className="w-full h-16 md:h-24"
-        >
-          <path
-            d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
-            opacity=".25"
-            className="fill-white"
-          ></path>
-          <path
-            d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
-            opacity=".5"
-            className="fill-white"
-          ></path>
-          <path
-            d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
-            className="fill-white"
-          ></path>
-        </svg>
-      </div> */}
     </div>
   );
 }
-
-Slider.propTypes = {
-  searchQuery: PropTypes.string,
-  setSearchQuery: PropTypes.func,
-};

@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+"use client";
+
+import { useState, useEffect, useCallback, useRef } from "react";
 import Swal from "sweetalert2";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
@@ -7,28 +9,46 @@ import {
   Heart,
   Star,
   Clock,
-  Filter,
-  ChevronDown,
-  Info,
   Search,
   Calendar,
   MessageSquare,
   X,
   Loader2,
+  Crown,
+  Leaf,
+  Zap,
+  Sparkles,
+  Award,
 } from "lucide-react";
 import { debounce } from "lodash";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
+import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
+import * as THREE from "three";
+
+gsap.registerPlugin(ScrollTrigger, SplitText, MorphSVGPlugin, DrawSVGPlugin);
 
 export default function UpcomingMeals() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState(null);
+
+  const sectionRef = useRef(null);
+  const heroRef = useRef(null);
+  const titleRef = useRef(null);
+  const cardsRef = useRef([]);
+  const threeContainerRef = useRef(null);
+  const morphRef = useRef(null);
+  const particleSystemRef = useRef(null);
 
   const axiosSecure = useAxiosSecure();
   const { user, loading } = useAuth();
 
-  const { data: userType = {} } = useQuery({
+  const { data: userType = {}, isLoading: userLoading } = useQuery({
     queryKey: ["userType", user?.email],
     enabled: !loading && !!user?.email,
     queryFn: async () => {
@@ -40,6 +60,7 @@ export default function UpcomingMeals() {
   const {
     data: upcomingMeals = [],
     refetch,
+    isLoading: mealsLoading,
     isFetching,
   } = useQuery({
     queryKey: ["meals", activeCategory, debouncedSearchQuery],
@@ -59,8 +80,303 @@ export default function UpcomingMeals() {
     },
   });
 
-  // Debounce search input to prevent too many API calls
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Revolutionary Three.js Future Scene
+  useEffect(() => {
+    if (!threeContainerRef.current) return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+    threeContainerRef.current.appendChild(renderer.domElement);
+
+    // Create futuristic time portal effect
+    const timePortal = [];
+
+    // Rotating green energy rings
+    for (let i = 0; i < 8; i++) {
+      const ringGeometry = new THREE.RingGeometry(5 + i * 2, 5.5 + i * 2, 32);
+      const ringMaterial = new THREE.MeshBasicMaterial({
+        color: new THREE.Color().setHSL(0.3 + i * 0.02, 0.9, 0.5 + i * 0.05),
+        transparent: true,
+        opacity: 0.3 - i * 0.03,
+        side: THREE.DoubleSide,
+      });
+      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+      ring.position.z = -20 - i * 3;
+      ring.userData = {
+        rotationSpeed: (i % 2 === 0 ? 1 : -1) * (0.01 + i * 0.002),
+        originalZ: ring.position.z,
+        pulseSpeed: 0.02 + i * 0.005,
+      };
+      scene.add(ring);
+      timePortal.push(ring);
+    }
+
+    // Floating future food holograms
+    const holograms = [];
+    for (let i = 0; i < 25; i++) {
+      const geometry = new THREE.SphereGeometry(
+        0.3 + Math.random() * 0.4,
+        12,
+        12
+      );
+      const material = new THREE.MeshBasicMaterial({
+        color: new THREE.Color().setHSL(0.3 + Math.random() * 0.1, 0.8, 0.6),
+        transparent: true,
+        opacity: 0.7,
+        wireframe: true,
+      });
+      const hologram = new THREE.Mesh(geometry, material);
+      hologram.position.set(
+        (Math.random() - 0.5) * 60,
+        (Math.random() - 0.5) * 30,
+        (Math.random() - 0.5) * 40
+      );
+      hologram.userData = {
+        rotationSpeed: {
+          x: (Math.random() - 0.5) * 0.03,
+          y: (Math.random() - 0.5) * 0.03,
+          z: (Math.random() - 0.5) * 0.03,
+        },
+        floatSpeed: Math.random() * 0.008 + 0.003,
+        originalY: hologram.position.y,
+        time: Math.random() * Math.PI * 2,
+        pulseSpeed: Math.random() * 0.02 + 0.01,
+      };
+      scene.add(hologram);
+      holograms.push(hologram);
+    }
+
+    // Future particle streams
+    const streamGeometry = new THREE.BufferGeometry();
+    const streamCount = 300;
+    const streamPositions = new Float32Array(streamCount * 3);
+    const streamColors = new Float32Array(streamCount * 3);
+    const streamVelocities = [];
+
+    for (let i = 0; i < streamCount; i++) {
+      streamPositions[i * 3] = (Math.random() - 0.5) * 100;
+      streamPositions[i * 3 + 1] = Math.random() * 60 - 30;
+      streamPositions[i * 3 + 2] = (Math.random() - 0.5) * 80;
+
+      const color = new THREE.Color().setHSL(
+        0.3 + Math.random() * 0.1,
+        0.9,
+        0.6
+      );
+      streamColors[i * 3] = color.r;
+      streamColors[i * 3 + 1] = color.g;
+      streamColors[i * 3 + 2] = color.b;
+
+      streamVelocities.push({
+        x: (Math.random() - 0.5) * 0.05,
+        y: Math.random() * 0.03 + 0.01,
+        z: (Math.random() - 0.5) * 0.05,
+      });
+    }
+
+    streamGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(streamPositions, 3)
+    );
+    streamGeometry.setAttribute(
+      "color",
+      new THREE.BufferAttribute(streamColors, 3)
+    );
+    const streamMaterial = new THREE.PointsMaterial({
+      size: 0.15,
+      transparent: true,
+      opacity: 0.8,
+      vertexColors: true,
+    });
+    const streams = new THREE.Points(streamGeometry, streamMaterial);
+    scene.add(streams);
+    particleSystemRef.current = { streams, velocities: streamVelocities };
+
+    camera.position.set(0, 8, 25);
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      // Animate time portal rings
+      timePortal.forEach((ring, index) => {
+        ring.rotation.z += ring.userData.rotationSpeed;
+
+        // Pulsing effect
+        const pulse = 1 + Math.sin(Date.now() * ring.userData.pulseSpeed) * 0.3;
+        ring.scale.setScalar(pulse);
+
+        // Moving through time
+        ring.position.z += 0.1;
+        if (ring.position.z > 10) {
+          ring.position.z = ring.userData.originalZ;
+        }
+      });
+
+      // Animate holograms
+      holograms.forEach((hologram) => {
+        hologram.userData.time += hologram.userData.floatSpeed;
+        hologram.position.y =
+          hologram.userData.originalY + Math.sin(hologram.userData.time) * 3;
+
+        hologram.rotation.x += hologram.userData.rotationSpeed.x;
+        hologram.rotation.y += hologram.userData.rotationSpeed.y;
+        hologram.rotation.z += hologram.userData.rotationSpeed.z;
+
+        // Pulsing opacity
+        hologram.material.opacity =
+          0.7 + Math.sin(Date.now() * hologram.userData.pulseSpeed) * 0.3;
+      });
+
+      // Animate particle streams
+      const positions = streams.geometry.attributes.position.array;
+      for (let i = 0; i < streamCount; i++) {
+        positions[i * 3] += streamVelocities[i].x;
+        positions[i * 3 + 1] += streamVelocities[i].y;
+        positions[i * 3 + 2] += streamVelocities[i].z;
+
+        // Reset particles
+        if (positions[i * 3 + 1] > 30) {
+          positions[i * 3 + 1] = -30;
+          positions[i * 3] = (Math.random() - 0.5) * 100;
+          positions[i * 3 + 2] = (Math.random() - 0.5) * 80;
+        }
+      }
+      streams.geometry.attributes.position.needsUpdate = true;
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (threeContainerRef.current && renderer.domElement) {
+        threeContainerRef.current.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+    };
+  }, []);
+
+  // Revolutionary GSAP Animations
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Morphing SVG background
+      if (morphRef.current) {
+        const tl = gsap.timeline({ repeat: -1, yoyo: true });
+        tl.to(morphRef.current, {
+          morphSVG: "M30,70 Q70,30 90,70 Q70,110 30,70",
+          duration: 5,
+          ease: "power2.inOut",
+        }).to(morphRef.current, {
+          morphSVG: "M40,60 Q60,40 80,60 Q60,80 40,60",
+          duration: 3,
+          ease: "power2.inOut",
+        });
+      }
+
+      // Split text with time distortion effect
+      if (titleRef.current) {
+        const split = new SplitText(titleRef.current, { type: "chars,words" });
+
+        gsap.fromTo(
+          split.chars,
+          {
+            opacity: 0,
+            y: 200,
+            rotationX: -90,
+            rotationY: 180,
+            transformOrigin: "0% 50% -50",
+            scale: 0.2,
+            filter: "blur(20px)",
+          },
+          {
+            opacity: 1,
+            y: 0,
+            rotationX: 0,
+            rotationY: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 2,
+            ease: "back.out(2)",
+            stagger: {
+              amount: 2,
+              from: "center",
+            },
+            scrollTrigger: {
+              trigger: titleRef.current,
+              start: "top 80%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      }
+
+      // Hero parallax with time warp
+      gsap.to(heroRef.current, {
+        yPercent: -25,
+        rotationX: 2,
+        ease: "none",
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+
+      // Cards with quantum entrance
+      gsap.fromTo(
+        cardsRef.current,
+        {
+          opacity: 0,
+          y: 200,
+          scale: 0.5,
+          rotationY: -45,
+          rotationX: 30,
+          transformOrigin: "center center",
+          filter: "blur(10px)",
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotationY: 0,
+          rotationX: 0,
+          filter: "blur(0px)",
+          duration: 1.5,
+          ease: "power3.out",
+          stagger: {
+            amount: 1,
+            from: "random",
+          },
+          scrollTrigger: {
+            trigger: ".meals-grid",
+            start: "top 80%",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, [upcomingMeals]);
+
+  // Debounce search
   const debouncedSearch = useCallback(
     debounce((query) => {
       setDebouncedSearchQuery(query);
@@ -68,19 +384,49 @@ export default function UpcomingMeals() {
     []
   );
 
-  // Update debounced search when searchQuery changes
   useEffect(() => {
     debouncedSearch(searchQuery);
-    // Don't include debouncedSearch in dependencies as it would create a new debounce function on each render
   }, [searchQuery, debouncedSearch]);
+
+  // Quantum hover effect
+  const handleCardHover = (index, isEntering) => {
+    const card = cardsRef.current[index];
+    if (!card) return;
+
+    if (isEntering) {
+      setHoveredCard(index);
+      gsap.to(card, {
+        scale: 1.1,
+        rotationY: 10,
+        rotationX: 5,
+        z: 100,
+        boxShadow: "0 40px 80px rgba(34, 197, 94, 0.4)",
+        duration: 0.5,
+        ease: "power2.out",
+      });
+    } else {
+      setHoveredCard(null);
+      gsap.to(card, {
+        scale: 1,
+        rotationY: 0,
+        rotationX: 0,
+        z: 0,
+        boxShadow: "0 15px 35px rgba(0, 0, 0, 0.2)",
+        duration: 0.5,
+        ease: "power2.out",
+      });
+    }
+  };
 
   const handleLike = async (meal) => {
     if (!user) {
       Swal.fire({
         icon: "warning",
-        title: "Login Required",
-        text: "You need to be logged in to like meals.",
+        title: "Access Denied",
+        text: "You need to be logged in to like future meals.",
         confirmButtonColor: "#22c55e",
+        background: "#1f2937",
+        color: "#ffffff",
       });
       return;
     }
@@ -98,62 +444,55 @@ export default function UpcomingMeals() {
           refetch();
           Swal.fire({
             icon: "success",
-            title: "Liked!",
-            text: `You liked ${meal.title}.`,
+            title: "Future Approved!",
+            text: `You liked ${meal.title} from the future.`,
             confirmButtonColor: "#22c55e",
             timer: 1500,
             showConfirmButton: false,
+            background: "#1f2937",
+            color: "#ffffff",
           });
         }
       } catch (error) {
-        if (error.response?.status === 400) {
-          Swal.fire({
-            icon: "warning",
-            title: "Already Liked",
-            text: "You have already liked this meal.",
-            confirmButtonColor: "#22c55e",
-          });
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "Something went wrong. Please try again later.",
-            confirmButtonColor: "#22c55e",
-          });
-        }
+        Swal.fire({
+          icon: "error",
+          title: "Temporal Error",
+          text: "Something went wrong in the timeline. Please try again.",
+          confirmButtonColor: "#22c55e",
+          background: "#1f2937",
+          color: "#ffffff",
+        });
       }
     } else {
       Swal.fire({
         icon: "info",
-        title: "Premium Feature",
-        text: "Only Silver, Gold, and Platinum subscribers can like upcoming meals.",
-        confirmButtonText: "Upgrade Now",
+        title: "Premium Time Travel",
+        text: "Only Premium subscribers can influence the future menu timeline.",
+        confirmButtonText: "Upgrade to Premium",
         confirmButtonColor: "#22c55e",
         showCancelButton: true,
-        cancelButtonText: "Maybe Later",
+        cancelButtonText: "Stay in Present",
+        background: "#1f2937",
+        color: "#ffffff",
       });
     }
   };
 
-  // Check if user has already liked a meal
   const hasUserLikedMeal = (meal) => {
     return meal.likedBy?.includes(user?.email);
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
-    if (!dateString) return "Coming Soon";
+    if (!dateString) return "Timeline Unknown";
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Get all unique categories from meals
   const categories = [
     "all",
     ...new Set(upcomingMeals.map((meal) => meal.category).filter(Boolean)),
   ];
 
-  // Filter meals based on search and category
   const filteredMeals = upcomingMeals.filter((meal) => {
     const matchesCategory =
       activeCategory === "all" || meal.category === activeCategory;
@@ -170,340 +509,315 @@ export default function UpcomingMeals() {
     return matchesCategory && matchesSearch;
   });
 
-  // Highlight search matches in text
-  const highlightMatch = (text, query) => {
-    if (!query || !text) return text;
-
-    const regex = new RegExp(
-      `(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
-      "gi"
-    );
-    const parts = text.split(regex);
-
-    return parts.map((part, index) =>
-      regex.test(part) ? (
-        <mark
-          key={index}
-          className="bg-yellow-200 text-gray-800 px-0.5 rounded"
-        >
-          {part}
-        </mark>
-      ) : (
-        part
-      )
-    );
-  };
-
-  // Clear search
   const clearSearch = () => {
     setSearchQuery("");
   };
 
-  // if (userLoading || mealsLoading) {
-  //   return (
-
-  //   );
-  // }
+  if (userLoading || mealsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative w-32 h-32 mx-auto mb-12">
+            <div className="absolute inset-0 border-4 border-green-500/30 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-t-green-400 rounded-full animate-spin"></div>
+            <div className="absolute inset-2 border-4 border-r-emerald-400 rounded-full animate-spin animate-reverse"></div>
+            <div className="absolute inset-4 border-4 border-b-lime-400 rounded-full animate-spin"></div>
+          </div>
+          <p className="text-green-300 font-bold text-2xl animate-pulse">
+            Accessing future timeline...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-        <div className="container mx-auto px-4 py-12 sm:py-16">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-              Upcoming Meals
-            </h1>
-            <p className="text-gray-300 text-lg mb-8">
-              Preview and influence our future menu by liking meals you&apos;d
-              like to see
-            </p>
+    <div
+      ref={sectionRef}
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 to-black relative overflow-hidden"
+    >
+      {/* Morphing SVG Background */}
+      <svg
+        className="absolute inset-0 w-full h-full opacity-5"
+        viewBox="0 0 100 100"
+      >
+        <path
+          ref={morphRef}
+          d="M30,50 Q50,30 70,50 Q50,70 30,50"
+          fill="none"
+          stroke="url(#futureGradient)"
+          strokeWidth="0.5"
+        />
+        <defs>
+          <linearGradient
+            id="futureGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop offset="0%" stopColor="#22c55e" />
+            <stop offset="50%" stopColor="#84cc16" />
+            <stop offset="100%" stopColor="#16a34a" />
+          </linearGradient>
+        </defs>
+      </svg>
 
-            {/* Real-time Search Bar */}
-            <div className="relative max-w-md mx-auto mb-8">
+      {/* Three.js Future Scene */}
+      <div
+        ref={threeContainerRef}
+        className="fixed inset-0 pointer-events-none opacity-40"
+        style={{ zIndex: 1 }}
+      />
+
+      {/* Hero Section */}
+      <div
+        ref={heroRef}
+        className="relative z-10 min-h-screen flex items-center justify-center"
+      >
+        <div className="container mx-auto px-4 text-center">
+          <div className="inline-flex items-center bg-green-500/20 backdrop-blur-2xl text-green-300 px-8 py-4 rounded-full text-sm font-bold mb-12 border border-green-400/40">
+            <Calendar size={20} className="mr-3 animate-pulse" />
+            <span className="bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">
+              FUTURE CULINARY TIMELINE
+            </span>
+            <Sparkles
+              size={20}
+              className="ml-3 animate-spin"
+              style={{ animationDuration: "3s" }}
+            />
+          </div>
+
+          <h1
+            ref={titleRef}
+            className="text-7xl sm:text-8xl lg:text-9xl font-black leading-tight mb-12"
+          >
+            <span className="bg-gradient-to-r from-green-300 via-emerald-300 to-lime-300 bg-clip-text text-transparent">
+              FUTURE
+            </span>
+            <br />
+            <span className="text-white">FLAVORS</span>
+          </h1>
+
+          <p className="text-2xl text-green-200 max-w-4xl mx-auto mb-16 leading-relaxed font-light">
+            Step into tomorrow's kitchen and influence the future of dining with
+            your preferences
+          </p>
+
+          {/* Futuristic Search */}
+          <div className="max-w-3xl mx-auto mb-16">
+            <div className="relative bg-black/40 backdrop-blur-2xl rounded-2xl border border-green-500/40 overflow-hidden">
               <input
                 type="text"
-                placeholder="Search upcoming meals..."
-                className="w-full px-5 py-3 pl-12 pr-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                placeholder="Search the future culinary database..."
+                className="w-full px-10 py-8 bg-transparent text-white placeholder-green-300/60 text-xl focus:outline-none font-medium"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Search
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-
-              {/* Show spinner when searching */}
-              {isSearching || isFetching ? (
-                <Loader2
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 animate-spin"
-                  size={20}
-                />
-              ) : searchQuery ? (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              ) : null}
-            </div>
-
-            {/* Search Status */}
-            {debouncedSearchQuery && (
-              <div className="text-gray-300 text-sm mb-6">
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-3">
                 {isSearching || isFetching ? (
-                  <span className="flex items-center justify-center">
-                    <Loader2 size={16} className="animate-spin mr-2" />
-                    Searching for &quot;{debouncedSearchQuery}&quot;...
-                  </span>
+                  <Loader2 className="text-green-400 animate-spin" size={28} />
+                ) : searchQuery ? (
+                  <button
+                    onClick={clearSearch}
+                    className="text-green-400 hover:text-white transition-colors"
+                  >
+                    <X size={28} />
+                  </button>
                 ) : (
-                  <span>
-                    Found {filteredMeals.length} result
-                    {filteredMeals.length !== 1 ? "s" : ""} for &quot;
-                    {debouncedSearchQuery}&quot;
-                  </span>
+                  <Search className="text-green-400" size={28} />
                 )}
               </div>
-            )}
-
-            {/* Premium User Info */}
-            {user &&
-              !["Silver", "Gold", "Platinum"].includes(
-                userType.subscription
-              ) && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 max-w-2xl mx-auto">
-                  <div className="flex items-start">
-                    <Info
-                      size={20}
-                      className="text-yellow-400 mr-3 flex-shrink-0 mt-0.5"
-                    />
-                    <p className="text-gray-300 text-sm text-left">
-                      <span className="font-medium text-white">
-                        Premium Feature:
-                      </span>{" "}
-                      Upgrade to a Silver, Gold, or Platinum plan to like
-                      upcoming meals and influence our menu!
-                    </p>
-                  </div>
-                </div>
-              )}
-          </div>
-        </div>
-      </div>
-
-      {/* Content Section */}
-      <div className="container mx-auto px-4 py-12">
-        {/* Category Filters */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">
-              Browse Upcoming Meals
-              {filteredMeals.length > 0 && (
-                <span className="text-gray-500 text-lg font-normal ml-2">
-                  ({filteredMeals.length})
-                </span>
-              )}
-            </h2>
-
-            {/* Mobile Filter Button */}
-            <button
-              className="md:hidden flex items-center justify-center space-x-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-full"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-            >
-              <Filter size={18} />
-              <span>Filters</span>
-              <ChevronDown
-                size={16}
-                className={`transform transition-transform ${
-                  isFilterOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-emerald-500/10 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+            </div>
           </div>
 
-          {/* Desktop Category Pills */}
-          <div className="hidden md:flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  activeCategory === category
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          {/* Mobile Filters (Collapsible) */}
-          {isFilterOpen && (
-            <div className="md:hidden mt-4 bg-white p-4 rounded-xl shadow-lg border border-gray-100 animate-slideDown">
-              <h3 className="font-medium text-gray-800 mb-3">Categories</h3>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
+          {/* Category Navigation */}
+          {/* <div className="flex justify-center mb-16">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl blur-xl"></div>
+              <div className="relative flex flex-wrap gap-4 bg-black/30 backdrop-blur-2xl rounded-2xl p-4 border border-green-500/30">
+                {categories.map((category, index) => (
                   <button
                     key={category}
-                    onClick={() => {
-                      setActiveCategory(category);
-                      setIsFilterOpen(false);
-                    }}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    onClick={() => setActiveCategory(category)}
+                    className={`group relative px-8 py-4 rounded-xl font-bold transition-all duration-500 transform hover:scale-105 ${
                       activeCategory === category
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-100 text-gray-700"
+                        ? "bg-gradient-to-r from-green-500 to-emerald-500 text-black shadow-2xl shadow-green-500/50"
+                        : "text-green-300 hover:text-white hover:bg-green-500/20"
                     }`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                    <span className="relative z-10">
+                      {category.toUpperCase()}
+                    </span>
+                    {activeCategory === category && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-xl opacity-20 animate-pulse"></div>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
-          )}
+          </div> */}
 
-          {/* Active Filters */}
-          {(activeCategory !== "all" || debouncedSearchQuery) && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              <span className="text-sm text-gray-600 mr-1 py-1">
-                Active filters:
+          {/* Premium User Info */}
+          {user &&
+            !["Silver", "Gold", "Platinum"].includes(userType.subscription) && (
+              <div className="max-w-3xl mx-auto bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-xl rounded-2xl p-8 border border-green-400/40">
+                <div className="flex items-center justify-center">
+                  <Crown
+                    size={28}
+                    className="text-green-400 mr-4 animate-pulse"
+                  />
+                  <p className="text-green-200 text-center text-lg">
+                    <span className="font-black text-green-400">
+                      UPGRADE TO PREMIUM
+                    </span>{" "}
+                    to influence the future timeline and like upcoming culinary
+                    creations!
+                  </p>
+                </div>
+              </div>
+            )}
+        </div>
+      </div>
+
+      {/* Meals Grid */}
+      <div className="relative z-10 container mx-auto px-4 py-20">
+        <div className="text-center mb-20">
+          <h2 className="text-6xl font-black text-white mb-8">
+            <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+              FUTURE MENU
+            </span>{" "}
+            PREVIEW
+            {filteredMeals.length > 0 && (
+              <span className="text-green-400 text-3xl font-normal ml-4">
+                ({filteredMeals.length})
               </span>
-
-              {activeCategory !== "all" && (
-                <button
-                  onClick={() => setActiveCategory("all")}
-                  className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200 transition-colors"
-                >
-                  {activeCategory.charAt(0).toUpperCase() +
-                    activeCategory.slice(1)}
-                  <X size={14} />
-                </button>
-              )}
-
-              {debouncedSearchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"
-                >
-                  Search: {debouncedSearchQuery}
-                  <X size={14} />
-                </button>
-              )}
-
-              <button
-                onClick={() => {
-                  setActiveCategory("all");
-                  clearSearch();
-                }}
-                className="text-sm text-gray-500 hover:text-gray-700 py-1 ml-1"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
+            )}
+          </h2>
+          <p className="text-2xl text-green-200 max-w-3xl mx-auto">
+            Experience tomorrow's culinary innovations before they arrive
+          </p>
         </div>
 
-        {/* Meals Grid */}
         {isSearching && filteredMeals.length === 0 ? (
-          <div className="flex justify-center items-center py-16">
-            <Loader2 size={30} className="text-green-500 animate-spin mr-3" />
-            <p className="text-gray-600">Searching for meals...</p>
+          <div className="flex justify-center items-center py-32">
+            <Loader2 size={60} className="text-green-400 animate-spin mr-6" />
+            <p className="text-green-300 text-2xl font-bold">
+              Scanning future timeline...
+            </p>
           </div>
         ) : filteredMeals.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="meals-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {filteredMeals.map((meal, index) => (
               <div
                 key={meal._id || index}
-                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group animate-fadeIn"
-                style={{ animationDelay: `${index * 0.05}s` }}
+                ref={(el) => (cardsRef.current[index] = el)}
+                className="group relative bg-gradient-to-br from-black/60 to-green-900/30 backdrop-blur-xl rounded-3xl overflow-hidden border border-green-500/40 hover:border-green-400/80 transition-all duration-700"
+                onMouseEnter={() => handleCardHover(index, true)}
+                onMouseLeave={() => handleCardHover(index, false)}
+                style={{ perspective: "1000px" }}
               >
-                <div className="relative overflow-hidden">
+                {/* Holographic Effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-green-400/20 via-transparent to-emerald-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                {/* Image Container */}
+                <div className="relative h-72 overflow-hidden">
                   <img
-                    src={meal.image || "/placeholder.svg"}
+                    src={
+                      meal.image ||
+                      `https://images.unsplash.com/photo-${
+                        1565299624946 + index || "/placeholder.svg"
+                      }-d3c442d3e04c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80`
+                    }
                     alt={meal.title}
-                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                    {meal.category || "Uncategorized"}
+
+                  {/* Future Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-900/80 via-transparent to-transparent"></div>
+
+                  {/* Future Badge */}
+                  <div className="absolute top-4 left-4 bg-gradient-to-r from-green-400 to-emerald-400 text-black text-sm px-4 py-2 rounded-full flex items-center font-black shadow-2xl">
+                    <Calendar size={14} className="mr-2" />
+                    <span>FUTURE</span>
                   </div>
 
-                  {/* Coming Soon Badge */}
-                  <div className="absolute top-3 left-3 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
-                    <Calendar size={12} className="mr-1" />
-                    <span>Coming Soon</span>
+                  {/* Category Badge */}
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-emerald-500 to-lime-500 text-black text-sm px-4 py-2 rounded-full font-bold shadow-2xl">
+                    {meal.category || "UNKNOWN"}
+                  </div>
+
+                  {/* Time Indicator */}
+                  <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm p-3 rounded-full opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                    <Zap size={18} className="text-green-400" />
                   </div>
                 </div>
 
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-semibold text-gray-800 line-clamp-1 group-hover:text-green-600 transition-colors">
-                      {debouncedSearchQuery
-                        ? highlightMatch(meal.title, debouncedSearchQuery)
-                        : meal.title}
+                {/* Content */}
+                <div className="p-8">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-2xl font-black text-white group-hover:text-green-400 transition-colors line-clamp-1">
+                      {meal.title}
                     </h3>
                     {meal.rating && (
-                      <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-full">
+                      <div className="flex items-center bg-green-500/20 backdrop-blur-sm px-3 py-2 rounded-full ml-3">
                         <Star
-                          size={16}
-                          className="text-yellow-500 fill-yellow-500"
+                          size={18}
+                          className="text-green-400 fill-green-400"
                         />
-                        <span className="ml-1 text-sm font-medium">
+                        <span className="ml-2 text-sm font-bold text-green-300">
                           {meal.rating || meal.retting}
                         </span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center text-gray-500 text-sm mb-3">
-                    <Clock size={14} className="mr-1" />
-                    <span>{formatDate(meal.postTime)}</span>
+                  <div className="flex items-center text-green-300 text-sm mb-4">
+                    <Clock size={16} className="mr-2" />
+                    <span className="font-medium">
+                      {formatDate(meal.postTime)}
+                    </span>
                   </div>
 
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                  <p className="text-green-200 text-sm mb-6 line-clamp-2 leading-relaxed">
                     {meal.ingredients ? (
                       <span>
-                        <span className="font-medium">Ingredients:</span>{" "}
-                        {debouncedSearchQuery
-                          ? highlightMatch(
-                              meal.ingredients,
-                              debouncedSearchQuery
-                            )
-                          : meal.ingredients}
+                        <span className="font-bold text-green-400">
+                          Future Ingredients:
+                        </span>{" "}
+                        {meal.ingredients}
                       </span>
                     ) : (
-                      "A delicious upcoming meal prepared with fresh ingredients by our expert chefs."
+                      "A revolutionary culinary creation from the future, designed to transcend current taste boundaries."
                     )}
                   </p>
 
-                  <div className="flex items-center text-gray-500 text-sm mb-4">
-                    <span className="font-medium">By:</span>
-                    <span className="ml-1">
-                      {debouncedSearchQuery
-                        ? highlightMatch(
-                            meal.distributorName || "Hostel Pro Chef",
-                            debouncedSearchQuery
-                          )
-                        : meal.distributorName || "Hostel Pro Chef"}
+                  <div className="flex items-center text-green-300 text-sm mb-8">
+                    <span className="font-bold text-green-400">
+                      Future Chef:
+                    </span>
+                    <span className="ml-2">
+                      {meal.distributorName || "AI Master Chef"}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <div className="text-lg font-bold text-green-500">
+                    <div className="text-3xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                       $
                       {typeof meal.price === "number"
                         ? meal.price.toFixed(2)
                         : meal.price}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
                       <button
                         onClick={() => handleLike(meal)}
-                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-colors ${
+                        className={`flex items-center gap-2 px-4 py-3 rounded-full text-sm transition-all duration-300 transform hover:scale-105 ${
                           hasUserLikedMeal(meal)
-                            ? "bg-red-50 text-red-500"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            ? "bg-red-500/20 text-red-400 border border-red-400/40"
+                            : "bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-400/40"
                         }`}
                         disabled={
                           !user ||
@@ -514,38 +828,38 @@ export default function UpcomingMeals() {
                         }
                       >
                         <Heart
-                          size={16}
+                          size={18}
                           className={
-                            hasUserLikedMeal(meal) ? "fill-red-500" : ""
+                            hasUserLikedMeal(meal) ? "fill-red-400" : ""
                           }
                         />
-                        <span>{meal.likes || 0}</span>
+                        <span className="font-bold">{meal.likes || 0}</span>
                       </button>
 
                       <button
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 rounded-full text-sm bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all duration-300 border border-green-400/40 transform hover:scale-105"
                         onClick={() => {
                           Swal.fire({
                             title: meal.title,
                             html: `
                               <div class="text-left">
-                                <p class="mb-3">${
+                                <p class="mb-4 text-gray-300">${
                                   meal.description ||
-                                  "No description available."
+                                  "No description available from the future."
                                 }</p>
-                                <p class="text-sm text-gray-500 mb-2">Coming soon to our menu!</p>
+                                <p class="text-sm text-green-400 mb-4 font-bold">Arriving from the future timeline!</p>
                                 
-                                <h3 class="font-semibold mt-4 mb-2">Ingredients:</h3>
-                                <p>${
+                                <h3 class="font-bold mt-6 mb-3 text-green-400">Future Ingredients:</h3>
+                                <p class="text-gray-300">${
                                   meal.ingredients ||
-                                  "Ingredients information will be available soon."
+                                  "Ingredient data will be transmitted from the future."
                                 }</p>
                                 
-                                <h3 class="font-semibold mt-4 mb-2">Reviews:</h3>
-                                <p>${
+                                <h3 class="font-bold mt-6 mb-3 text-green-400">Timeline Reviews:</h3>
+                                <p class="text-gray-300">${
                                   meal.reviews?.length > 0
-                                    ? `${meal.reviews.length} reviews available`
-                                    : "No reviews yet."
+                                    ? `${meal.reviews.length} reviews from future diners`
+                                    : "No reviews from the future yet."
                                 }</p>
                               </div>
                             `,
@@ -553,28 +867,35 @@ export default function UpcomingMeals() {
                             imageHeight: 200,
                             imageAlt: meal.title,
                             confirmButtonColor: "#22c55e",
+                            background: "#1f2937",
+                            color: "#ffffff",
                           });
                         }}
                       >
-                        <MessageSquare size={16} />
-                        <span>{meal.reviews?.length || 0}</span>
+                        <MessageSquare size={18} />
+                        <span className="font-bold">
+                          {meal.reviews?.length || 0}
+                        </span>
                       </button>
                     </div>
                   </div>
                 </div>
+
+                {/* Quantum Glow Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-emerald-500/0 to-green-500/0 group-hover:from-green-500/10 group-hover:via-emerald-500/10 group-hover:to-green-500/10 transition-all duration-700 pointer-events-none rounded-3xl"></div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 bg-gray-50 rounded-xl">
-            <Calendar size={48} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              No Upcoming Meals Found
+          <div className="text-center py-32 bg-black/40 backdrop-blur-xl rounded-3xl border border-green-500/30">
+            <Calendar size={80} className="mx-auto text-green-400/40 mb-8" />
+            <h3 className="text-3xl font-black text-white mb-6">
+              NO FUTURE MEALS DETECTED
             </h3>
-            <p className="text-gray-500 mb-6">
+            <p className="text-green-300 mb-12 text-xl">
               {debouncedSearchQuery
-                ? `We couldn't find any upcoming meals matching "${debouncedSearchQuery}".`
-                : "There are no upcoming meals at the moment. Check back later!"}
+                ? `The future timeline doesn't contain "${debouncedSearchQuery}".`
+                : "The future culinary database is currently empty. Check back for temporal updates!"}
             </p>
             {(debouncedSearchQuery || activeCategory !== "all") && (
               <button
@@ -582,14 +903,42 @@ export default function UpcomingMeals() {
                   clearSearch();
                   setActiveCategory("all");
                 }}
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-black px-12 py-6 rounded-xl font-black text-xl transition-all duration-300 transform hover:scale-105"
               >
-                Clear Filters
+                RESET TIMELINE
               </button>
             )}
           </div>
         )}
+
+        {/* Future Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-24 pt-16 border-t border-green-500/30">
+          {[
+            { number: "∞", label: "Future Possibilities", icon: Zap },
+            { number: "2025+", label: "Timeline Year", icon: Calendar },
+            { number: "100%", label: "Future Fresh", icon: Leaf },
+            { number: "24/7", label: "Time Travel Kitchen", icon: Award },
+          ].map((stat, index) => (
+            <div key={index} className="text-center group">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300">
+                <stat.icon size={28} className="text-green-400" />
+              </div>
+              <div className="text-5xl font-black text-green-400 mb-3 group-hover:scale-110 transition-transform duration-300">
+                {stat.number}
+              </div>
+              <div className="text-green-300 font-bold text-lg">
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      <style jsx>{`
+        .animate-reverse {
+          animation-direction: reverse;
+        }
+      `}</style>
     </div>
   );
 }

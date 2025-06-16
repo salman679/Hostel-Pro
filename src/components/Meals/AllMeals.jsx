@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -5,48 +7,302 @@ import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
 import InfiniteScroll from "react-infinite-scroller";
 import {
   Search,
-  Filter,
-  ChevronDown,
   Star,
-  X,
   ArrowRight,
   Clock,
   Heart,
+  ChefHat,
+  Leaf,
+  Zap,
+  Award,
 } from "lucide-react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
+import * as THREE from "three";
+
+gsap.registerPlugin(ScrollTrigger, SplitText, MorphSVGPlugin);
 
 const MealsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("");
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeView, setActiveView] = useState("grid"); // grid or list view
-  const [windowWidth, setWindowWidth] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 0
-  );
-  const searchInputRef = useRef(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const heroRef = useRef(null);
+  const titleRef = useRef(null);
+  const searchRef = useRef(null);
+  const gridRef = useRef(null);
+  const threeContainerRef = useRef(null);
+  const cursorRef = useRef(null);
+  const morphRef = useRef(null);
   const axiosPublic = useAxiosPublic();
 
-  // Handle window resize
+  // Revolutionary Three.js Scene
   useEffect(() => {
+    if (!threeContainerRef.current) return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+    threeContainerRef.current.appendChild(renderer.domElement);
+
+    // Create dynamic green matrix
+    const matrix = [];
+
+    // Floating green crystals
+    for (let i = 0; i < 30; i++) {
+      const geometry = new THREE.OctahedronGeometry(0.5 + Math.random() * 0.5);
+      const material = new THREE.MeshBasicMaterial({
+        color: new THREE.Color().setHSL(
+          0.3 + Math.random() * 0.1,
+          0.9,
+          0.5 + Math.random() * 0.3
+        ),
+        transparent: true,
+        opacity: 0.8,
+        wireframe: Math.random() > 0.5,
+      });
+      const crystal = new THREE.Mesh(geometry, material);
+      crystal.position.set(
+        (Math.random() - 0.5) * 100,
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 50
+      );
+      crystal.userData = {
+        rotationSpeed: {
+          x: (Math.random() - 0.5) * 0.02,
+          y: (Math.random() - 0.5) * 0.02,
+          z: (Math.random() - 0.5) * 0.02,
+        },
+        floatSpeed: Math.random() * 0.005 + 0.002,
+        originalY: crystal.position.y,
+        time: Math.random() * Math.PI * 2,
+      };
+      scene.add(crystal);
+      matrix.push(crystal);
+    }
+
+    // Green energy grid
+    const gridGeometry = new THREE.PlaneGeometry(200, 200, 20, 20);
+    const gridMaterial = new THREE.MeshBasicMaterial({
+      color: 0x22c55e,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.1,
+    });
+    const grid = new THREE.Mesh(gridGeometry, gridMaterial);
+    grid.rotation.x = -Math.PI / 2;
+    grid.position.y = -30;
+    scene.add(grid);
+
+    // Particle streams
+    const streamGeometry = new THREE.BufferGeometry();
+    const streamCount = 200;
+    const streamPositions = new Float32Array(streamCount * 3);
+    const streamVelocities = [];
+
+    for (let i = 0; i < streamCount; i++) {
+      streamPositions[i * 3] = (Math.random() - 0.5) * 200;
+      streamPositions[i * 3 + 1] = Math.random() * 100 - 50;
+      streamPositions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+
+      streamVelocities.push({
+        x: (Math.random() - 0.5) * 0.1,
+        y: Math.random() * 0.05 + 0.02,
+        z: (Math.random() - 0.5) * 0.1,
+      });
+    }
+
+    streamGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(streamPositions, 3)
+    );
+    const streamMaterial = new THREE.PointsMaterial({
+      color: 0x84cc16,
+      size: 0.2,
+      transparent: true,
+      opacity: 0.9,
+    });
+    const streams = new THREE.Points(streamGeometry, streamMaterial);
+    scene.add(streams);
+
+    camera.position.set(0, 10, 40);
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      // Animate crystals
+      matrix.forEach((crystal) => {
+        crystal.userData.time += crystal.userData.floatSpeed;
+        crystal.position.y =
+          crystal.userData.originalY + Math.sin(crystal.userData.time) * 5;
+
+        crystal.rotation.x += crystal.userData.rotationSpeed.x;
+        crystal.rotation.y += crystal.userData.rotationSpeed.y;
+        crystal.rotation.z += crystal.userData.rotationSpeed.z;
+      });
+
+      // Animate grid
+      grid.rotation.z += 0.002;
+
+      // Animate particle streams
+      const positions = streams.geometry.attributes.position.array;
+      for (let i = 0; i < streamCount; i++) {
+        positions[i * 3] += streamVelocities[i].x;
+        positions[i * 3 + 1] += streamVelocities[i].y;
+        positions[i * 3 + 2] += streamVelocities[i].z;
+
+        // Reset particles
+        if (positions[i * 3 + 1] > 50) {
+          positions[i * 3 + 1] = -50;
+          positions[i * 3] = (Math.random() - 0.5) * 200;
+          positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+        }
+      }
+      streams.geometry.attributes.position.needsUpdate = true;
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
     const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-      if (window.innerWidth >= 768) {
-        setIsFilterOpen(false);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (threeContainerRef.current && renderer.domElement) {
+        threeContainerRef.current.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+    };
+  }, []);
+
+  // Custom Cursor with Magnetic Effect
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+
+      if (cursorRef.current) {
+        gsap.to(cursorRef.current, {
+          x: e.clientX - 15,
+          y: e.clientY - 15,
+          duration: 0.1,
+          ease: "power2.out",
+        });
       }
     };
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Focus search input on mount
+  // Revolutionary GSAP Animations
   useEffect(() => {
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
+    const ctx = gsap.context(() => {
+      // Morphing background
+      if (morphRef.current) {
+        gsap.to(morphRef.current, {
+          morphSVG: "M20,80 Q50,20 80,80 Q50,120 20,80",
+          duration: 4,
+          repeat: -1,
+          yoyo: true,
+          ease: "power2.inOut",
+        });
+      }
+
+      // Split text with spectacular entrance
+      if (titleRef.current) {
+        const split = new SplitText(titleRef.current, {
+          type: "chars,words,lines",
+        });
+
+        gsap.fromTo(
+          split.chars,
+          {
+            opacity: 0,
+            y: 200,
+            rotationX: -90,
+            rotationY: 45,
+            transformOrigin: "0% 50% -50",
+            scale: 0.3,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            rotationX: 0,
+            rotationY: 0,
+            scale: 1,
+            duration: 2,
+            ease: "back.out(2)",
+            stagger: {
+              amount: 1.5,
+              from: "random",
+            },
+            scrollTrigger: {
+              trigger: titleRef.current,
+              start: "top 80%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      }
+
+      // Search bar with magnetic field
+      if (searchRef.current) {
+        const searchElement = searchRef.current;
+
+        searchElement.addEventListener("mouseenter", () => {
+          gsap.to(searchElement, {
+            scale: 1.05,
+            rotationY: 5,
+            boxShadow: "0 30px 60px rgba(34, 197, 94, 0.4)",
+            duration: 0.4,
+            ease: "power2.out",
+          });
+        });
+
+        searchElement.addEventListener("mouseleave", () => {
+          gsap.to(searchElement, {
+            scale: 1,
+            rotationY: 0,
+            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.1)",
+            duration: 0.4,
+            ease: "power2.out",
+          });
+        });
+      }
+
+      // Hero parallax with depth
+      gsap.to(heroRef.current, {
+        yPercent: -30,
+        ease: "none",
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+    }, heroRef);
+
+    return () => ctx.revert();
   }, []);
 
-  // Fetch meals with pagination using infiniteQuery
   const { data, fetchNextPage, hasNextPage, isLoading, isError, refetch } =
     useInfiniteQuery({
       queryKey: ["meals", searchQuery, category, priceRange],
@@ -58,10 +314,9 @@ const MealsPage = () => {
             minPrice: priceRange.min,
             maxPrice: priceRange.max,
             page: pageParam,
-            limit: 6, // Load 6 meals per request
+            limit: 6,
           },
         });
-
         return response.data;
       },
       getNextPageParam: (lastPage, allPages) => {
@@ -69,608 +324,408 @@ const MealsPage = () => {
       },
     });
 
-  // Flatten paginated meals data
   const meals = data?.pages.flat() || [];
+  const categories = ["Breakfast", "Lunch", "Dinner", "Dessert"];
 
   const handleSearch = (e) => {
     e.preventDefault();
     refetch();
   };
 
-  const handleSearchInputChange = (e) => setSearchQuery(e.target.value);
-
   const handleCategoryChange = (selectedCategory) => {
-    setCategory(selectedCategory === category ? "" : selectedCategory);
-    setTimeout(() => refetch(), 100);
-  };
-
-  const handlePriceRangeChange = (e) => {
-    const { name, value } = e.target;
-    setPriceRange((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const applyPriceFilter = () => {
-    refetch();
-    if (windowWidth < 768) {
-      setIsFilterOpen(false);
-    }
-  };
-
-  const resetFilters = () => {
-    setSearchQuery("");
-    setCategory("");
-    setPriceRange({ min: 0, max: 1000 });
-    setTimeout(() => refetch(), 100);
-  };
-
-  // Categories array
-  const categories = ["Breakfast", "Lunch", "Dinner", "Dessert"];
-
-  // Mock data for featured meal
-  const featuredMeal = {
-    _id: "featured123",
-    title: "Chef's Special Mediterranean Platter",
-    description:
-      "A delightful combination of hummus, falafel, tabbouleh, and warm pita bread. Served with our signature tahini sauce and pickled vegetables.",
-    image: "https://i.ibb.co.com/Pjxy4gj/p0c0tpbh-jpg.webp",
-    price: 24.99,
-    rating: 4.9,
-    category: "Lunch",
-    prepTime: "25 mins",
-    calories: 650,
+    gsap.to(gridRef.current, {
+      opacity: 0,
+      scale: 0.9,
+      rotationY: 45,
+      duration: 0.4,
+      onComplete: () => {
+        setCategory(selectedCategory === category ? "" : selectedCategory);
+        setTimeout(() => refetch(), 100);
+        gsap.to(gridRef.current, {
+          opacity: 1,
+          scale: 1,
+          rotationY: 0,
+          duration: 0.6,
+          ease: "back.out(1.7)",
+        });
+      },
+    });
   };
 
   return (
-    <div className="bg-white min-h-screen">
-      {/* Hero Section with Featured Meal */}
-      <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fillRule="evenodd"%3E%3Cg fill="%23ffffff" fillOpacity="0.2"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-              backgroundSize: "24px 24px",
-            }}
-          ></div>
-        </div>
+    <div className="bg-gradient-to-br from-gray-900 via-green-900 to-black min-h-screen relative overflow-hidden">
+      {/* Custom Cursor */}
+      <div
+        ref={cursorRef}
+        className="fixed w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full pointer-events-none z-50 mix-blend-screen opacity-80"
+        style={{ transform: "translate(-50%, -50%)" }}
+      />
 
-        <div className="container mx-auto px-4 py-16 sm:py-24 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-            {/* Left Content */}
-            <div className="w-full lg:w-1/2 text-center lg:text-left">
-              <h1 className="text-4xl sm:text-5xl font-bold mb-4 leading-tight">
-                Discover <span className="text-green-400">Culinary</span>{" "}
-                Excellence
-              </h1>
-              <p className="text-gray-300 text-lg mb-8 max-w-xl mx-auto lg:mx-0">
-                Explore our diverse menu of delicious meals prepared with fresh
-                ingredients by our expert chefs.
-              </p>
+      {/* Morphing SVG Background */}
+      <svg
+        className="absolute inset-0 w-full h-full opacity-5"
+        viewBox="0 0 100 100"
+      >
+        <path
+          ref={morphRef}
+          d="M20,50 Q50,20 80,50 Q50,80 20,50"
+          fill="none"
+          stroke="url(#greenGradient)"
+          strokeWidth="0.3"
+        />
+        <defs>
+          <linearGradient
+            id="greenGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop offset="0%" stopColor="#22c55e" />
+            <stop offset="100%" stopColor="#84cc16" />
+          </linearGradient>
+        </defs>
+      </svg>
 
-              {/* Search Bar */}
-              <form
-                onSubmit={handleSearch}
-                className="relative max-w-md mx-auto lg:mx-0 mb-8"
-              >
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search for meals..."
-                  className="w-full px-5 py-4 pl-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-                  value={searchQuery}
-                  onChange={handleSearchInputChange}
-                />
-                <Search
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={20}
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors"
-                >
-                  <Search size={20} />
-                </button>
-              </form>
+      {/* Three.js Background */}
+      <div
+        ref={threeContainerRef}
+        className="fixed inset-0 pointer-events-none opacity-30"
+        style={{ zIndex: 1 }}
+      />
 
-              {/* Category Pills */}
-              <div className="flex flex-wrap justify-center lg:justify-start gap-2">
-                <button
-                  onClick={() => handleCategoryChange("")}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    category === ""
-                      ? "bg-green-500 text-white"
-                      : "bg-white/10 text-white hover:bg-white/20"
-                  }`}
-                >
-                  All
-                </button>
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => handleCategoryChange(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      category === cat
-                        ? "bg-green-500 text-white"
-                        : "bg-white/10 text-white hover:bg-white/20"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Featured Meal Card */}
-            <div className="w-full lg:w-1/2 mt-8 lg:mt-0">
-              <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.02] transition-all group">
-                <div className="absolute inset-0 bg-black opacity-20 group-hover:opacity-10 transition-opacity"></div>
-                <img
-                  src={featuredMeal.image || "/placeholder.svg"}
-                  alt={featuredMeal.title}
-                  className="w-full h-64 sm:h-80 object-cover"
-                />
-                <div className="absolute top-4 right-4 bg-green-500 text-white text-xs px-3 py-1 rounded-full font-medium">
-                  Featured
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
-                  <div className="flex items-center mb-2">
-                    <div className="flex items-center bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full">
-                      <Star
-                        size={14}
-                        className="text-yellow-400 fill-yellow-400"
-                      />
-                      <span className="ml-1 text-xs font-medium text-white">
-                        {featuredMeal.rating}
-                      </span>
-                    </div>
-                    <div className="flex items-center ml-2 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full">
-                      <Clock size={14} className="text-white" />
-                      <span className="ml-1 text-xs font-medium text-white">
-                        {featuredMeal.prepTime}
-                      </span>
-                    </div>
-                    <div className="flex items-center ml-2 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full">
-                      <span className="text-xs font-medium text-white">
-                        {featuredMeal.calories} cal
-                      </span>
-                    </div>
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-                    {featuredMeal.title}
-                  </h3>
-                  <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-                    {featuredMeal.description}
-                  </p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xl font-bold text-green-400">
-                      ${featuredMeal.price}
-                    </span>
-                    <Link
-                      to={`/meals/${featuredMeal._id}`}
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center transition-colors"
-                    >
-                      View Details
-                      <ArrowRight size={16} className="ml-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* Hero Section */}
+      <div
+        ref={heroRef}
+        className="relative z-10 min-h-screen flex items-center justify-center"
+      >
+        <div className="container mx-auto px-4 text-center">
+          {/* Animated Badge */}
+          <div className="inline-flex items-center bg-green-500/20 backdrop-blur-2xl text-green-300 px-8 py-4 rounded-full text-sm font-bold mb-12 border border-green-400/40 animate-pulse">
+            <Leaf
+              size={20}
+              className="mr-3 animate-spin"
+              style={{ animationDuration: "4s" }}
+            />
+            <span className="bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">
+              PREMIUM CULINARY UNIVERSE
+            </span>
+            <Zap size={20} className="ml-3 animate-bounce" />
           </div>
+
+          {/* Revolutionary Title */}
+          <h1
+            ref={titleRef}
+            className="text-7xl sm:text-8xl lg:text-9xl font-black leading-tight mb-12"
+          >
+            <span className="bg-gradient-to-r from-green-300 via-emerald-300 to-lime-300 bg-clip-text text-transparent">
+              TASTE
+            </span>
+            <br />
+            <span className="text-white">THE FUTURE</span>
+          </h1>
+
+          <p className="text-2xl text-green-200 max-w-4xl mx-auto mb-16 leading-relaxed font-light">
+            Embark on an extraordinary culinary journey through our universe of
+            flavors, where each dish is a masterpiece
+          </p>
+
+          {/* Futuristic Search Bar */}
+          <form onSubmit={handleSearch} className="max-w-3xl mx-auto mb-16">
+            <div
+              ref={searchRef}
+              className="relative bg-black/40 backdrop-blur-2xl rounded-2xl border border-green-500/40 overflow-hidden"
+              style={{ perspective: "1000px" }}
+            >
+              <input
+                type="text"
+                placeholder="Search the culinary universe..."
+                className="w-full px-10 py-8 bg-transparent text-white placeholder-green-300/60 text-xl focus:outline-none font-medium"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-green-500 to-emerald-500 text-black p-4 rounded-xl hover:from-green-400 hover:to-emerald-400 transition-all duration-300 shadow-2xl"
+              >
+                <Search size={28} />
+              </button>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-emerald-500/10 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+            </div>
+          </form>
+
+          {/* Category Pills with Holographic Effect */}
+          {/* <div className="flex flex-wrap justify-center gap-6 mb-20">
+            <button
+              onClick={() => handleCategoryChange("")}
+              className={`group relative px-10 py-5 rounded-full font-black text-lg transition-all duration-500 transform hover:scale-110 ${
+                category === ""
+                  ? "bg-gradient-to-r from-green-500 to-emerald-500 text-black shadow-2xl shadow-green-500/50"
+                  : "bg-black/40 backdrop-blur-xl text-green-300 hover:text-white hover:bg-green-500/20 border border-green-500/30"
+              }`}
+            >
+              <span className="relative z-10">ALL UNIVERSES</span>
+              {category === "" && (
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full opacity-20 animate-pulse"></div>
+              )}
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => handleCategoryChange(cat)}
+                className={`group relative px-10 py-5 rounded-full font-black text-lg transition-all duration-500 transform hover:scale-110 ${
+                  category === cat
+                    ? "bg-gradient-to-r from-green-500 to-emerald-500 text-black shadow-2xl shadow-green-500/50"
+                    : "bg-black/40 backdrop-blur-xl text-green-300 hover:text-white hover:bg-green-500/20 border border-green-500/30"
+                }`}
+              >
+                <span className="relative z-10">{cat.toUpperCase()}</span>
+                {category === cat && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full opacity-20 animate-pulse"></div>
+                )}
+              </button>
+            ))}
+          </div> */}
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12">
-        {/* Filters and View Toggle */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            {category ? `${category} Meals` : "All Meals"}
-            {meals.length > 0 && (
-              <span className="text-gray-500 text-lg font-normal ml-2">
-                ({meals.length})
-              </span>
+      {/* Meals Grid Section */}
+      <div className="relative z-10 container mx-auto px-4 py-20">
+        <div className="text-center mb-20">
+          <h2 className="text-6xl font-black text-white mb-8">
+            {category ? (
+              <>
+                <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  {category.toUpperCase()}
+                </span>{" "}
+                COLLECTION
+              </>
+            ) : (
+              <>
+                <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  SIGNATURE
+                </span>{" "}
+                MASTERPIECES
+              </>
             )}
           </h2>
-
-          <div className="flex items-center gap-3">
-            {/* Filter Button (Mobile) */}
-            <button
-              className="sm:hidden flex items-center justify-center space-x-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-full"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-            >
-              <Filter size={18} />
-              <span>Filters</span>
-              <ChevronDown
-                size={16}
-                className={`transform transition-transform ${
-                  isFilterOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {/* View Toggle */}
-            <div className="hidden sm:flex bg-gray-100 rounded-full p-1">
-              <button
-                onClick={() => setActiveView("grid")}
-                className={`p-2 rounded-full ${
-                  activeView === "grid"
-                    ? "bg-white shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-                aria-label="Grid view"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="3" width="7" height="7"></rect>
-                  <rect x="14" y="3" width="7" height="7"></rect>
-                  <rect x="3" y="14" width="7" height="7"></rect>
-                  <rect x="14" y="14" width="7" height="7"></rect>
-                </svg>
-              </button>
-              <button
-                onClick={() => setActiveView("list")}
-                className={`p-2 rounded-full ${
-                  activeView === "list"
-                    ? "bg-white shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-                aria-label="List view"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="8" y1="6" x2="21" y2="6"></line>
-                  <line x1="8" y1="12" x2="21" y2="12"></line>
-                  <line x1="8" y1="18" x2="21" y2="18"></line>
-                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-
-            {/* Desktop Price Filter */}
-            <div className="hidden sm:flex items-center bg-gray-100 rounded-full px-4 py-2">
-              <span className="text-gray-700 text-sm mr-2">Price:</span>
-              <input
-                type="number"
-                placeholder="Min"
-                name="min"
-                className="w-16 bg-transparent border-b border-gray-300 focus:border-green-500 text-sm text-gray-700 focus:outline-none"
-                value={priceRange.min}
-                onChange={handlePriceRangeChange}
-              />
-              <span className="mx-2 text-gray-500">-</span>
-              <input
-                type="number"
-                placeholder="Max"
-                name="max"
-                className="w-16 bg-transparent border-b border-gray-300 focus:border-green-500 text-sm text-gray-700 focus:outline-none"
-                value={priceRange.max}
-                onChange={handlePriceRangeChange}
-              />
-              <button
-                onClick={applyPriceFilter}
-                className="ml-2 bg-green-500 text-white p-1 rounded-full hover:bg-green-600 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="9 10 4 15 9 20"></polyline>
-                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
+          <p className="text-2xl text-green-200 max-w-3xl mx-auto">
+            Each creation is a symphony of flavors designed to transcend your
+            expectations
+          </p>
         </div>
 
-        {/* Mobile Filters (Collapsible) */}
-        {isFilterOpen && (
-          <div className="sm:hidden mb-8 bg-white p-4 rounded-xl shadow-lg border border-gray-100 animate-slideDown">
-            <div className="space-y-4">
-              {/* Price Range Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price Range
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    name="min"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    value={priceRange.min}
-                    onChange={handlePriceRangeChange}
-                  />
-                  <span className="text-gray-500">-</span>
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    name="max"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    value={priceRange.max}
-                    onChange={handlePriceRangeChange}
-                  />
-                </div>
-                <div className="flex justify-between mt-4">
-                  <button
-                    onClick={applyPriceFilter}
-                    className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-600 transition-colors"
-                  >
-                    Apply Filters
-                  </button>
-                  <button
-                    onClick={resetFilters}
-                    className="text-gray-600 hover:text-green-600 px-4 py-2 text-sm flex items-center"
-                  >
-                    <X size={16} className="mr-1" /> Reset
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Active Filters */}
-        {(category || priceRange.min > 0 || priceRange.max < 1000) && (
-          <div className="flex flex-wrap gap-2 mb-8">
-            <span className="text-sm text-gray-600 mr-2">Active filters:</span>
-            {category && (
-              <span className="inline-flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
-                {category}
-                <button
-                  onClick={() => {
-                    setCategory("");
-                    setTimeout(() => refetch(), 100);
-                  }}
-                  className="ml-2 text-green-700 hover:text-green-900"
-                >
-                  <X size={14} />
-                </button>
-              </span>
-            )}
-            {(priceRange.min > 0 || priceRange.max < 1000) && (
-              <span className="inline-flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
-                ${priceRange.min} - ${priceRange.max}
-                <button
-                  onClick={() => {
-                    setPriceRange({ min: 0, max: 1000 });
-                    setTimeout(() => refetch(), 100);
-                  }}
-                  className="ml-2 text-green-700 hover:text-green-900"
-                >
-                  <X size={14} />
-                </button>
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Meals List with Infinite Scroll */}
         {isLoading && meals.length === 0 ? (
-          <div className="flex flex-col justify-center items-center py-20">
-            <div className="relative w-20 h-20">
-              <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-200 rounded-full"></div>
-              <div className="absolute top-0 left-0 w-full h-full border-4 border-t-green-500 rounded-full animate-spin"></div>
+          <div className="flex flex-col justify-center items-center py-32">
+            <div className="relative w-32 h-32 mb-12">
+              <div className="absolute inset-0 border-4 border-green-500/30 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-t-green-400 rounded-full animate-spin"></div>
+              <div className="absolute inset-2 border-4 border-r-emerald-400 rounded-full animate-spin animate-reverse"></div>
+              <div className="absolute inset-4 border-4 border-b-lime-400 rounded-full animate-spin"></div>
             </div>
-            <p className="text-gray-600 mt-4 font-medium">
-              Loading delicious meals...
+            <p className="text-green-300 font-bold text-2xl animate-pulse">
+              Materializing culinary wonders...
             </p>
           </div>
         ) : isError ? (
-          <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
-            <div className="text-red-500 mb-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-16 w-16 mx-auto"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+          <div className="text-center py-32 bg-black/40 backdrop-blur-xl rounded-3xl border border-red-500/30">
+            <div className="text-red-400 mb-8">
+              <Zap size={80} className="mx-auto animate-pulse" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              Failed to Load Meals
+            <h3 className="text-3xl font-black text-white mb-6">
+              SYSTEM MALFUNCTION
             </h3>
-            <p className="text-gray-600 mb-4">
-              There was an error loading the meals. Please try again.
+            <p className="text-red-300 mb-12 text-xl">
+              The culinary matrix is temporarily offline
             </p>
             <button
               onClick={() => refetch()}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-400 hover:to-pink-400 text-white px-12 py-6 rounded-xl font-black text-xl transition-all duration-300 transform hover:scale-105"
             >
-              Try Again
+              REBOOT SYSTEM
             </button>
           </div>
         ) : (
-          <InfiniteScroll
-            pageStart={0}
-            loadMore={fetchNextPage}
-            hasMore={hasNextPage}
-            loader={
-              <div className="text-center my-8">
-                <div className="inline-block w-12 h-12 border-4 border-gray-200 border-t-green-500 rounded-full animate-spin"></div>
-                <p className="text-gray-600 mt-2">Loading more meals...</p>
-              </div>
-            }
-          >
-            {meals.length > 0 ? (
-              activeView === "grid" ? (
-                // Grid View
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div ref={gridRef}>
+            <InfiniteScroll
+              pageStart={0}
+              loadMore={fetchNextPage}
+              hasMore={hasNextPage}
+              loader={
+                <div className="text-center my-16">
+                  <div className="inline-flex items-center bg-green-500/20 backdrop-blur-xl text-green-300 px-8 py-4 rounded-full border border-green-400/40">
+                    <div className="w-8 h-8 border-2 border-green-300/30 border-t-green-400 rounded-full animate-spin mr-4"></div>
+                    <span className="font-bold">
+                      Loading more culinary universes...
+                    </span>
+                  </div>
+                </div>
+              }
+            >
+              {meals.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                   {meals.map((meal, index) => (
                     <div
-                      key={meal?._id}
-                      className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 animate-fadeIn"
-                      style={{ animationDelay: `${index * 0.05}s` }}
+                      key={meal._id}
+                      className="group relative bg-gradient-to-br from-black/60 to-green-900/30 backdrop-blur-xl rounded-3xl overflow-hidden border border-green-500/40 hover:border-green-400/80 transition-all duration-700 transform hover:scale-105"
+                      style={{
+                        animationDelay: `${index * 0.1}s`,
+                        animation: "fadeInUp 1s ease-out forwards",
+                      }}
                     >
-                      <div className="relative overflow-hidden">
+                      {/* Holographic Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-400/20 via-transparent to-emerald-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                      {/* Image Container */}
+                      <div className="relative h-72 overflow-hidden">
                         <img
-                          src={meal?.image || "/placeholder.svg"}
-                          alt={meal?.title}
-                          className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
+                          src={
+                            meal.image ||
+                            `https://images.unsplash.com/photo-${
+                              1565299624946 + index || "/placeholder.svg"
+                            }-d3c442d3e04c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80`
+                          }
+                          alt={meal.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                          {meal?.category}
+
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-green-900/80 via-transparent to-transparent"></div>
+
+                        {/* Premium Badge */}
+                        <div className="absolute top-4 right-4 bg-gradient-to-r from-green-400 to-emerald-400 text-black px-4 py-2 rounded-full text-sm font-black shadow-2xl">
+                          <Award size={16} className="inline mr-2" />
+                          PREMIUM
                         </div>
-                        <button className="absolute top-3 left-3 bg-white/80 backdrop-blur-sm p-2 rounded-full text-gray-700 hover:text-red-500 transition-colors">
-                          <Heart size={18} />
+
+                        {/* Heart Button */}
+                        <button className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm p-3 rounded-full text-green-400 hover:text-red-400 transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0">
+                          <Heart size={20} />
                         </button>
+
+                        {/* Stats */}
+                        <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full">
+                              <Clock
+                                size={16}
+                                className="mr-2 text-green-400"
+                              />
+                              <span className="text-sm font-bold text-white">
+                                20 min
+                              </span>
+                            </div>
+                            <div className="flex items-center bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full">
+                              <ChefHat
+                                size={16}
+                                className="mr-2 text-green-400"
+                              />
+                              <span className="text-sm font-bold text-white">
+                                Master Chef
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="p-5">
-                        <div className="flex justify-between items-start mb-2">
-                          <h2 className="text-xl font-semibold text-gray-800 line-clamp-1 group-hover:text-green-600 transition-colors">
-                            {meal?.title}
-                          </h2>
-                          <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-full">
+
+                      {/* Content */}
+                      <div className="p-8">
+                        <div className="flex justify-between items-start mb-6">
+                          <h3 className="text-2xl font-black text-white group-hover:text-green-400 transition-colors line-clamp-1">
+                            {meal.title}
+                          </h3>
+                          <div className="flex items-center bg-green-500/20 backdrop-blur-sm px-3 py-2 rounded-full ml-3">
                             <Star
-                              size={16}
-                              className="text-yellow-500 fill-yellow-500"
+                              size={18}
+                              className="text-green-400 fill-green-400"
                             />
-                            <span className="ml-1 text-sm font-medium">
-                              {meal?.rating?.toFixed(1)}
+                            <span className="ml-2 text-sm font-bold text-green-300">
+                              {meal.rating?.toFixed(1) || "4.9"}
                             </span>
                           </div>
                         </div>
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                          {meal?.description ||
-                            "A delicious meal prepared with fresh ingredients by our expert chefs."}
+
+                        <p className="text-green-200 mb-8 line-clamp-2 leading-relaxed">
+                          {meal.description ||
+                            "A revolutionary culinary experience that transcends traditional boundaries and redefines taste."}
                         </p>
+
                         <div className="flex justify-between items-center">
-                          <span className="text-lg font-bold text-green-500">
-                            $
-                            {typeof meal?.price === "number"
-                              ? meal?.price?.toFixed(2)
-                              : meal?.price}
-                          </span>
+                          <div>
+                            <span className="text-4xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                              $
+                              {typeof meal.price === "number"
+                                ? meal.price.toFixed(2)
+                                : meal.price}
+                            </span>
+                            <span className="text-green-300 text-sm ml-2 font-medium">
+                              per serving
+                            </span>
+                          </div>
                           <Link
-                            to={`/meals/${meal?._id}`}
-                            className="bg-gray-100 hover:bg-green-500 text-gray-700 hover:text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300"
+                            to={`/meals/${meal._id}`}
+                            className="group/btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-black px-8 py-4 rounded-xl font-black flex items-center transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-green-500/50"
                           >
-                            View Details
+                            <span>EXPERIENCE</span>
+                            <ArrowRight
+                              size={20}
+                              className="ml-3 group-hover/btn:translate-x-1 transition-transform"
+                            />
                           </Link>
                         </div>
                       </div>
+
+                      {/* Glow Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-emerald-500/0 to-green-500/0 group-hover:from-green-500/10 group-hover:via-emerald-500/10 group-hover:to-green-500/10 transition-all duration-700 pointer-events-none rounded-3xl"></div>
                     </div>
                   ))}
                 </div>
               ) : (
-                // List View
-                <div className="space-y-4">
-                  {meals.map((meal, index) => (
-                    <div
-                      key={meal?._id}
-                      className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 flex flex-col sm:flex-row animate-fadeIn"
-                      style={{ animationDelay: `${index * 0.05}s` }}
-                    >
-                      <div className="relative w-full sm:w-1/3 h-48 sm:h-auto overflow-hidden">
-                        <img
-                          src={meal?.image || "/placeholder.svg"}
-                          alt={meal?.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                          {meal?.category}
-                        </div>
-                        <button className="absolute top-3 left-3 bg-white/80 backdrop-blur-sm p-2 rounded-full text-gray-700 hover:text-red-500 transition-colors">
-                          <Heart size={18} />
-                        </button>
-                      </div>
-                      <div className="p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="flex justify-between items-start mb-2">
-                            <h2 className="text-xl font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
-                              {meal?.title}
-                            </h2>
-                            <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-full ml-2">
-                              <Star
-                                size={16}
-                                className="text-yellow-500 fill-yellow-500"
-                              />
-                              <span className="ml-1 text-sm font-medium">
-                                {meal?.rating}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-gray-600 text-sm mb-4">
-                            {meal?.description ||
-                              "A delicious meal prepared with fresh ingredients by our expert chefs."}
-                          </p>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-lg font-bold text-green-500">
-                            $
-                            {typeof meal?.price === "number"
-                              ? meal?.price?.toFixed(2)
-                              : meal?.price}
-                          </span>
-                          <Link
-                            to={`/meals/${meal?._id}`}
-                            className="bg-gray-100 hover:bg-green-500 text-gray-700 hover:text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300"
-                          >
-                            View Details
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="text-center py-32 bg-black/40 backdrop-blur-xl rounded-3xl border border-green-500/30">
+                  <Search
+                    size={80}
+                    className="mx-auto text-green-400/40 mb-8"
+                  />
+                  <h3 className="text-3xl font-black text-white mb-6">
+                    NO MATCHES FOUND
+                  </h3>
+                  <p className="text-green-300 mb-12 text-xl">
+                    The culinary universe doesn't contain your search
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setCategory("");
+                      setPriceRange({ min: 0, max: 1000 });
+                      setTimeout(() => refetch(), 100);
+                    }}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-black px-12 py-6 rounded-xl font-black text-xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    RESET UNIVERSE
+                  </button>
                 </div>
-              )
-            ) : (
-              <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="text-gray-400 mb-4">
-                  <Search size={48} className="mx-auto" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  No Meals Found
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  We couldn&apos;t find any meals matching your search criteria.
-                </p>
-                <button
-                  onClick={resetFilters}
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            )}
-          </InfiniteScroll>
+              )}
+            </InfiniteScroll>
+          </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(50px) rotateY(-15deg);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) rotateY(0deg);
+          }
+        }
+
+        .animate-reverse {
+          animation-direction: reverse;
+        }
+      `}</style>
     </div>
   );
 };

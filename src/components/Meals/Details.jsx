@@ -1,1002 +1,852 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import Rating from "react-rating-stars-component";
-import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
-import Swal from "sweetalert2";
-import { useAuth } from "../../contexts/AuthContext";
-import useUserData from "../../Hooks/useUserData";
-import useAxiosSecure from "../../Hooks/useAxiosSecure";
-import {
-  Heart,
-  Clock,
-  User,
-  ChevronLeft,
-  Send,
-  Share2,
-  ShoppingBag,
-  Info,
-  MessageSquare,
-} from "lucide-react";
+"use client";
 
-export default function MealDetail() {
-  const [reviewText, setReviewText] = useState("");
-  const [likeCount, setLikeCount] = useState(0);
+import { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
+import {
+  ArrowLeft,
+  Star,
+  Clock,
+  Users,
+  ChefHat,
+  Heart,
+  Share2,
+  Plus,
+  Minus,
+  ShoppingCart,
+  Award,
+  Leaf,
+  Zap,
+  Shield,
+  Sparkles,
+} from "lucide-react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import * as THREE from "three";
+
+gsap.registerPlugin(ScrollTrigger, SplitText);
+
+export default function ModernMealDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const axiosPublic = useAxiosPublic();
+
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState("Regular");
   const [isLiked, setIsLiked] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
-  const [rating, setRating] = useState(0);
-  const { id } = useParams();
-  const { userData } = useUserData();
-  const axiosPublic = useAxiosPublic();
-  const axiosSecure = useAxiosSecure();
-  const { user } = useAuth();
 
-  console.log(user);
+  // Refs for animations
+  const containerRef = useRef(null);
+  const heroRef = useRef(null);
+  const imageRef = useRef(null);
+  const contentRef = useRef(null);
+  const titleRef = useRef(null);
+  const priceRef = useRef(null);
+  const tabsRef = useRef(null);
+  const detailsRef = useRef(null);
+  const reviewsRef = useRef([]);
+  const threeContainerRef = useRef(null);
+
+  // Three.js refs
+  const sceneRef = useRef(null);
+  const rendererRef = useRef(null);
+  const cameraRef = useRef(null);
+  const particlesRef = useRef([]);
 
   const {
     data: meal,
     isLoading,
-    isError,
-    refetch,
+    error,
   } = useQuery({
-    queryKey: ["mealDetails", id],
+    queryKey: ["meal", id],
     queryFn: async () => {
       const response = await axiosPublic.get(`/meals/${id}`);
       return response.data;
     },
+    enabled: !!id,
   });
 
-  const handleLike = async () => {
-    if (!user) {
-      Swal.fire({
-        icon: "warning",
-        title: "Login Required",
-        text: "You need to be logged in to like a meal.",
-        confirmButtonColor: "#22c55e",
+  // Three.js Scene Setup
+  useEffect(() => {
+    if (!threeContainerRef.current) return;
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+      powerPreference: "high-performance",
+    });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+    threeContainerRef.current.appendChild(renderer.domElement);
+
+    sceneRef.current = scene;
+    rendererRef.current = renderer;
+    cameraRef.current = camera;
+
+    // Create floating food particles
+    const particleCount = 50;
+    const particles = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      const geometry = new THREE.SphereGeometry(
+        0.02 + Math.random() * 0.08,
+        8,
+        8
+      );
+      const hue = 0.1 + Math.random() * 0.3; // Orange to green spectrum for food
+      const material = new THREE.MeshBasicMaterial({
+        color: new THREE.Color().setHSL(hue, 0.7, 0.5 + Math.random() * 0.3),
+        transparent: true,
+        opacity: 0.3 + Math.random() * 0.4,
       });
-      return;
+
+      const particle = new THREE.Mesh(geometry, material);
+      particle.position.set(
+        (Math.random() - 0.5) * 100,
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 50
+      );
+
+      particle.userData = {
+        originalPosition: particle.position.clone(),
+        velocity: new THREE.Vector3(
+          (Math.random() - 0.5) * 0.005,
+          (Math.random() - 0.5) * 0.005,
+          (Math.random() - 0.5) * 0.005
+        ),
+        rotationSpeed: {
+          x: (Math.random() - 0.5) * 0.01,
+          y: (Math.random() - 0.5) * 0.01,
+          z: (Math.random() - 0.5) * 0.01,
+        },
+        floatAmplitude: 0.5 + Math.random() * 1,
+        floatSpeed: 0.003 + Math.random() * 0.007,
+        time: Math.random() * Math.PI * 2,
+      };
+
+      scene.add(particle);
+      particles.push(particle);
     }
-    try {
-      setIsLiked(!isLiked);
-      const newLikeCount = isLiked ? likeCount - 1 : likeCount + 1;
-      setLikeCount(newLikeCount);
+    particlesRef.current = particles;
 
-      await axiosSecure.patch(`/meals/${id}/like`, {
-        likes: newLikeCount,
+    camera.position.set(0, 0, 20);
+
+    // Animation loop
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      particles.forEach((particle) => {
+        particle.userData.time += particle.userData.floatSpeed;
+
+        // Floating motion
+        particle.position.y += Math.sin(particle.userData.time) * 0.005;
+        particle.position.x += Math.cos(particle.userData.time * 0.7) * 0.003;
+
+        // Gentle drift
+        particle.position.add(particle.userData.velocity);
+
+        // Rotation
+        particle.rotation.x += particle.userData.rotationSpeed.x;
+        particle.rotation.y += particle.userData.rotationSpeed.y;
+        particle.rotation.z += particle.userData.rotationSpeed.z;
+
+        // Boundary check
+        if (Math.abs(particle.position.x) > 50)
+          particle.userData.velocity.x *= -1;
+        if (Math.abs(particle.position.y) > 25)
+          particle.userData.velocity.y *= -1;
+        if (Math.abs(particle.position.z) > 25)
+          particle.userData.velocity.z *= -1;
       });
 
-      if (!isLiked) {
-        Swal.fire({
-          icon: "success",
-          title: "Liked!",
-          text: `You liked ${meal.title}!`,
-          confirmButtonColor: "#22c55e",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Handle resize
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (threeContainerRef.current && renderer.domElement) {
+        threeContainerRef.current.removeChild(renderer.domElement);
       }
-    } catch {
-      // Revert UI state if request fails
-      setIsLiked(!isLiked);
-      setLikeCount(isLiked ? likeCount + 1 : likeCount - 1);
+      renderer.dispose();
+    };
+  }, []);
 
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to like the meal. Please try again later.",
-        confirmButtonColor: "#22c55e",
-      });
-    }
-  };
+  // GSAP Animations
+  useEffect(() => {
+    if (!meal) return;
 
-  const handleRequestMeal = async () => {
-    if (!user) {
-      Swal.fire({
-        icon: "warning",
-        title: "Login Required",
-        text: "You need to be logged in to request a meal.",
-        confirmButtonColor: "#22c55e",
-      });
-      return;
-    }
-    if (userData.subscription === "Bronze") {
-      Swal.fire({
-        icon: "warning",
-        title: "Subscription Required",
-        text: "You need a package subscription to request a meal.",
-        confirmButtonColor: "#22c55e",
-      });
-      return;
-    }
+    const ctx = gsap.context(() => {
+      // Hero section animation
+      gsap.fromTo(
+        heroRef.current,
+        { opacity: 0, y: 50 },
+        { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
+      );
 
-    try {
-      await axiosSecure.post(`/meals/${id}/request`, {
-        userEmail: user.email,
-        userName: user.displayName,
-        mealId: id,
-        status: "pending",
-      });
-      refetch();
-      Swal.fire({
-        icon: "success",
-        title: "Request Sent",
-        text: "Your meal request has been submitted. You will be notified once it's processed.",
-        confirmButtonColor: "#22c55e",
-      });
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to send your meal request. Please try again later.",
-        confirmButtonColor: "#22c55e",
-      });
-    }
-  };
+      // Image animation with 3D effect
+      gsap.fromTo(
+        imageRef.current,
+        {
+          opacity: 0,
+          scale: 0.8,
+          rotationY: -15,
+        },
+        {
+          opacity: 1,
+          scale: 1,
+          rotationY: 0,
+          duration: 1.2,
+          ease: "power3.out",
+          delay: 0.3,
+        }
+      );
 
-  const handleReviewSubmit = async () => {
-    if (!user) {
-      Swal.fire({
-        icon: "warning",
-        title: "Login Required",
-        text: "You need to be logged in to submit a review.",
-        confirmButtonColor: "#22c55e",
-      });
-      return;
-    }
+      // Content animation
+      gsap.fromTo(
+        contentRef.current,
+        { opacity: 0, x: 50 },
+        { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.5 }
+      );
 
-    if (!reviewText.trim() || rating === 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "Incomplete Review",
-        text: "Please provide both a rating and review text before submitting.",
-        confirmButtonColor: "#22c55e",
-      });
-      return;
-    }
+      // Title animation with split text
+      if (titleRef.current) {
+        const split = new SplitText(titleRef.current, { type: "chars,words" });
 
-    try {
-      await axiosPublic
-        .post(`/meals/${id}/reviews`, {
-          userName: user.displayName,
-          userEmail: user.email,
-          text: reviewText,
-          rating: rating,
-          date: new Date().toISOString(),
-        })
-        .then((response) => {
-          if (response.data.modifiedCount > 0) {
-            setReviewText("");
-            setRating(0);
-            refetch();
-            Swal.fire({
-              icon: "success",
-              title: "Review Submitted",
-              text: "Thank you for your review!",
-              confirmButtonColor: "#22c55e",
-              timer: 1500,
-              showConfirmButton: false,
-            });
+        gsap.fromTo(
+          split.chars,
+          {
+            opacity: 0,
+            y: 50,
+            rotationX: -90,
+            transformOrigin: "0% 50% -50",
+          },
+          {
+            opacity: 1,
+            y: 0,
+            rotationX: 0,
+            duration: 1,
+            ease: "back.out(1.7)",
+            stagger: 0.02,
+            delay: 0.7,
           }
-        });
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to submit your review. Please try again later.",
-        confirmButtonColor: "#22c55e",
-      });
-    }
+        );
+      }
+
+      // Price animation
+      gsap.fromTo(
+        priceRef.current,
+        { opacity: 0, scale: 0.5 },
+        { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.7)", delay: 1 }
+      );
+
+      // Tabs animation
+      gsap.fromTo(
+        tabsRef.current?.children || [],
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: "power3.out",
+          delay: 1.2,
+        }
+      );
+
+      // Details animation
+      gsap.fromTo(
+        detailsRef.current,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", delay: 1.4 }
+      );
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [meal]);
+
+  const handleQuantityChange = (change) => {
+    setQuantity(Math.max(1, quantity + change));
+  };
+
+  const handleAddToCart = () => {
+    // Add to cart logic here
+    console.log("Added to cart:", { meal, quantity, selectedSize });
   };
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator
-        .share({
-          title: meal.title,
-          text: `Check out this delicious meal: ${meal.title}`,
-          url: window.location.href,
-        })
-        .catch((error) => console.log("Error sharing", error));
-    } else {
-      // Fallback for browsers that don't support the Web Share API
-      navigator.clipboard.writeText(window.location.href);
-      Swal.fire({
-        icon: "success",
-        title: "Link Copied!",
-        text: "Meal link copied to clipboard",
-        confirmButtonColor: "#22c55e",
-        timer: 1500,
-        showConfirmButton: false,
+      navigator.share({
+        title: meal?.title,
+        text: meal?.description,
+        url: window.location.href,
       });
     }
   };
 
-  useEffect(() => {
-    if (meal) {
-      setLikeCount(meal.likes || 0);
-      // Check if user has already liked this meal (this would require backend support)
-      // For now, we'll just use a placeholder
-      setIsLiked(false);
-    }
-  }, [meal]);
+  const sizes = [
+    { name: "Regular", price: 0, description: "Standard portion" },
+    { name: "Large", price: 3, description: "25% more food" },
+    { name: "Extra Large", price: 6, description: "50% more food" },
+  ];
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return "Unknown date";
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+  const tabs = [
+    { id: "description", label: "Description", icon: ChefHat },
+    { id: "nutrition", label: "Nutrition", icon: Leaf },
+    { id: "reviews", label: "Reviews", icon: Star },
+  ];
 
-  // Calculate time since post
-  const getTimeSince = (dateString) => {
-    if (!dateString) return "Recently";
-
-    const now = new Date();
-    const postDate = new Date(dateString);
-    const diffInSeconds = Math.floor((now - postDate) / 1000);
-
-    if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
-    if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 2592000)
-      return `${Math.floor(diffInSeconds / 86400)} days ago`;
-    if (diffInSeconds < 31536000)
-      return `${Math.floor(diffInSeconds / 2592000)} months ago`;
-    return `${Math.floor(diffInSeconds / 31536000)} years ago`;
-  };
-
-  // Mock nutritional information (replace with actual data when available)
-  const nutritionalInfo = {
-    calories: 450,
-    protein: 22,
-    carbs: 48,
-    fat: 18,
-    fiber: 6,
-  };
+  const mockReviews = [
+    {
+      id: 1,
+      name: "Alex Johnson",
+      rating: 5,
+      comment:
+        "Absolutely delicious! The flavors are incredible and the portion size is perfect.",
+      date: "2 days ago",
+      avatar:
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80",
+    },
+    {
+      id: 2,
+      name: "Sarah Chen",
+      rating: 5,
+      comment:
+        "This has become my go-to meal. Fresh ingredients and amazing taste every time!",
+      date: "1 week ago",
+      avatar:
+        "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80",
+    },
+    {
+      id: 3,
+      name: "Mike Rodriguez",
+      rating: 4,
+      comment:
+        "Great meal with excellent presentation. Delivery was quick and food was still hot.",
+      date: "2 weeks ago",
+      avatar:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80",
+    },
+  ];
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-white">
-        <div className="relative w-20 h-20">
-          <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-200 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-full h-full border-4 border-t-green-500 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative w-32 h-32 mb-8 mx-auto">
+            <div className="absolute inset-0 border-4 border-green-200 rounded-full" />
+            <div className="absolute inset-0 border-4 border-t-green-500 rounded-full animate-spin" />
+            <div className="absolute inset-2 border-4 border-r-emerald-500 rounded-full animate-spin animate-reverse" />
+          </div>
+          <p className="text-green-600 font-bold text-2xl animate-pulse">
+            Loading culinary masterpiece...
+          </p>
         </div>
-        <p className="ml-4 text-gray-600 font-medium">
-          Loading meal details...
-        </p>
       </div>
     );
   }
 
-  if (isError) {
+  if (error || !meal) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white p-4">
-        <div className="text-red-500 mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-16 w-16"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-8">🍽️</div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Meal Not Found
+          </h2>
+          <p className="text-gray-600 mb-8">
+            The meal you're looking for doesn't exist or has been removed.
+          </p>
+          <button
+            onClick={() => navigate("/meals")}
+            className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-2xl font-bold hover:from-green-600 hover:to-emerald-600 transition-all duration-300"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+            Browse All Meals
+          </button>
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Error Loading Meal
-        </h2>
-        <p className="text-gray-600 mb-6 text-center">
-          We couldn&apos;t load the meal details. Please try again later.
-        </p>
-        <Link
-          to="/meals"
-          className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors"
-        >
-          Back to Meals
-        </Link>
       </div>
     );
   }
 
   return (
-    <div className="bg-white min-h-screen">
-      {/* Back Navigation */}
-      <div className="container mx-auto px-4 py-4">
-        <Link
-          to="/meals"
-          className="inline-flex items-center text-green-500 hover:text-green-600 transition-colors"
+    <div
+      ref={containerRef}
+      className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 relative"
+    >
+      {/* Three.js Background */}
+      <div
+        ref={threeContainerRef}
+        className="fixed inset-0 pointer-events-none z-0"
+      />
+
+      {/* Back Button */}
+      <div className="relative z-10 p-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 hover:text-green-600 px-6 py-3 rounded-2xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl group"
         >
-          <ChevronLeft size={20} />
-          <span className="ml-1">Back to Meals</span>
-        </Link>
+          <ArrowLeft
+            size={20}
+            className="mr-2 group-hover:-translate-x-1 transition-transform"
+          />
+          Back to Meals
+        </button>
       </div>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row gap-8 items-center">
-            {/* Image */}
-            <div className="w-full md:w-1/2 relative">
-              <div className="w-full h-80 rounded-2xl overflow-hidden shadow-2xl">
+      <section
+        ref={heroRef}
+        className="relative z-10 container mx-auto px-4 pb-12"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
+          {/* Image Section */}
+          <div className="relative">
+            <div
+              ref={imageRef}
+              className="relative group"
+              style={{ perspective: "1000px" }}
+            >
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900 to-gray-800">
                 <img
-                  src={meal.image || "/placeholder.svg"}
+                  src={
+                    meal.image ||
+                    `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80` ||
+                    "/placeholder.svg"
+                  }
                   alt={meal.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-[500px] object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-              </div>
-              <div className="absolute top-4 right-4 bg-green-500 text-white text-xs px-3 py-1 rounded-full font-medium">
-                {meal.category}
-              </div>
-            </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-            {/* Details */}
-            <div className="w-full md:w-1/2">
-              <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+                {/* Floating Badges */}
+                <div className="absolute top-6 right-6 space-y-3">
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl">
+                    <Award size={16} className="inline mr-2" />
+                    Premium
+                  </div>
+                  {meal.isVegetarian && (
+                    <div className="bg-gradient-to-r from-green-400 to-green-600 text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl">
+                      <Leaf size={16} className="inline mr-2" />
+                      Vegetarian
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="absolute top-6 left-6 space-y-3">
+                  <button
+                    onClick={() => setIsLiked(!isLiked)}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl ${
+                      isLiked
+                        ? "bg-red-500 text-white scale-110"
+                        : "bg-white/80 text-gray-600 hover:bg-white hover:scale-110"
+                    }`}
+                  >
+                    <Heart
+                      size={20}
+                      className={isLiked ? "fill-current" : ""}
+                    />
+                  </button>
+
+                  <button
+                    onClick={handleShare}
+                    className="w-14 h-14 rounded-full bg-white/80 hover:bg-white text-gray-600 hover:text-green-600 flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-xl"
+                  >
+                    <Share2 size={20} />
+                  </button>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="absolute bottom-6 left-6 right-6">
+                  <div className="flex items-center justify-between text-white">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                        <Clock size={18} className="mr-2" />
+                        <span className="font-bold">15-20 min</span>
+                      </div>
+                      <div className="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                        <Users size={18} className="mr-2" />
+                        <span className="font-bold">Serves 1-2</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center bg-yellow-500/90 px-4 py-2 rounded-full">
+                      <Star size={18} className="mr-2 fill-current" />
+                      <span className="font-bold">
+                        {meal.rating?.toFixed(1) || "4.9"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Decorative Elements */}
+              <div className="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-20 blur-2xl" />
+              <div className="absolute -bottom-6 -left-6 w-40 h-40 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full opacity-20 blur-2xl" />
+            </div>
+          </div>
+
+          {/* Content Section */}
+          <div ref={contentRef} className="space-y-8">
+            <div>
+              <h1
+                ref={titleRef}
+                className="text-4xl sm:text-5xl lg:text-6xl font-black mb-6 bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 bg-clip-text text-transparent leading-tight"
+              >
                 {meal.title}
               </h1>
 
-              <div className="flex items-center mb-4">
-                <div className="flex items-center">
-                  <Rating
-                    count={5}
-                    size={20}
-                    value={Number(meal.rating.toFixed(1)) || 0}
-                    edit={false}
-                    activeColor="#ffd700"
-                  />
-                  <span className="ml-2 text-yellow-400 font-medium">
-                    {meal.rating || "No Rating"}
-                  </span>
-                </div>
-                <span className="mx-2 text-gray-400">•</span>
-                <span className="text-gray-300">
-                  {meal.reviews?.length || 0} reviews
-                </span>
-              </div>
-
-              <div className="flex items-center text-gray-300 mb-6">
-                <Clock size={16} className="mr-1" />
-                <span className="text-sm">{getTimeSince(meal.postTime)}</span>
-                <span className="mx-2">•</span>
-                <User size={16} className="mr-1" />
-                <span className="text-sm">
-                  By {meal.distributorName || "Unknown Chef"}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-3 mb-6">
-                <button
-                  onClick={handleLike}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-                    isLiked
-                      ? "bg-red-500 text-white"
-                      : "bg-white/10 hover:bg-white/20 text-white"
-                  }`}
-                >
-                  <Heart size={18} className={isLiked ? "fill-white" : ""} />
-                  <span>
-                    {likeCount} {likeCount === 1 ? "Like" : "Likes"}
-                  </span>
-                </button>
-
-                <button
-                  onClick={handleShare}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all"
-                >
-                  <Share2 size={18} />
-                  <span>Share</span>
-                </button>
-
-                <button
-                  onClick={handleRequestMeal}
-                  disabled={meal?.requests?.some(
-                    (request) => request.userEmail === user?.email
-                  )}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-                    meal?.requests?.some(
-                      (request) => request.userEmail === user?.email
-                    )
-                      ? "bg-gray-500 text-white cursor-not-allowed"
-                      : "bg-green-500 hover:bg-green-600 text-white"
-                  }`}
-                >
-                  <ShoppingBag size={18} />
-                  <span>
-                    {meal?.requests?.some(
-                      (request) => request.userEmail === user?.email
-                    )
-                      ? "Request Sent"
-                      : "Request Meal"}
-                  </span>
-                </button>
-              </div>
-
-              {!user && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-6 flex items-start">
-                  <Info
-                    size={20}
-                    className="text-yellow-400 mr-2 flex-shrink-0 mt-0.5"
-                  />
-                  <p className="text-gray-300 text-sm">
-                    <span className="font-medium text-white">
-                      Login required:
-                    </span>{" "}
-                    You need to be logged in to like, request, or review this
-                    meal.
-                  </p>
-                </div>
-              )}
-
-              {user && userData?.subscription === "Bronze" && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-6 flex items-start">
-                  <Info
-                    size={20}
-                    className="text-yellow-400 mr-2 flex-shrink-0 mt-0.5"
-                  />
-                  <p className="text-gray-300 text-sm">
-                    <span className="font-medium text-white">
-                      Subscription required:
-                    </span>{" "}
-                    Upgrade your subscription to request this meal.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content Tabs */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="border-b border-gray-200 mb-8">
-          <div className="flex overflow-x-auto hide-scrollbar">
-            <button
-              onClick={() => setActiveTab("description")}
-              className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === "description"
-                  ? "border-green-500 text-green-500"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Description
-            </button>
-            <button
-              onClick={() => setActiveTab("ingredients")}
-              className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === "ingredients"
-                  ? "border-green-500 text-green-500"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Ingredients
-            </button>
-            <button
-              onClick={() => setActiveTab("nutrition")}
-              className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === "nutrition"
-                  ? "border-green-500 text-green-500"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Nutrition
-            </button>
-            <button
-              onClick={() => setActiveTab("reviews")}
-              className={`px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === "reviews"
-                  ? "border-green-500 text-green-500"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Reviews ({meal.reviews?.length || 0})
-            </button>
-          </div>
-        </div>
-
-        {/* Tab Content */}
-        <div className="mb-12">
-          {/* Description Tab */}
-          {activeTab === "description" && (
-            <div className="animate-fadeIn">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                About This Meal
-              </h2>
-              <p className="text-gray-600 leading-relaxed mb-6">
-                {meal.description || "No description available for this meal."}
+              <p className="text-xl text-gray-600 leading-relaxed mb-8">
+                {meal.description ||
+                  "A carefully crafted culinary experience that combines premium ingredients with innovative cooking techniques to deliver an unforgettable dining experience."}
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Details
-                  </h3>
-                  <ul className="space-y-3">
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">Category:</span>
-                      <span className="font-medium text-gray-800">
-                        {meal.category || "Not specified"}
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">Distributor:</span>
-                      <span className="font-medium text-gray-800">
-                        {meal.distributorName || "Not specified"}
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">Post Date:</span>
-                      <span className="font-medium text-gray-800">
-                        {formatDate(meal.postTime)}
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">Rating:</span>
-                      <span className="font-medium text-gray-800">
-                        {meal.rating.toFixed(1) || "No ratings yet"}
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">Price:</span>
-                      <span className="font-medium text-green-500">
-                        ${meal.price?.toFixed(2) || "N/A"}
-                      </span>
-                    </li>
-                  </ul>
+              {/* Price Section */}
+              <div
+                ref={priceRef}
+                className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-green-100 mb-8"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <span className="text-5xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                      $
+                      {(
+                        (typeof meal.price === "number"
+                          ? meal.price
+                          : Number.parseFloat(meal.price)) +
+                        (sizes.find((s) => s.name === selectedSize)?.price || 0)
+                      ).toFixed(2)}
+                    </span>
+                    <span className="text-gray-500 text-lg ml-2">
+                      per serving
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Shield size={20} className="text-green-600" />
+                    <span className="text-green-600 font-bold">
+                      Quality Guaranteed
+                    </span>
+                  </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Why You&apos;ll Love It
-                  </h3>
-                  <ul className="space-y-3">
-                    <li className="flex items-start">
-                      <div className="bg-green-100 rounded-full p-1 mr-3 mt-0.5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 text-green-500"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-gray-600">
-                        Prepared by expert chefs
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <div className="bg-green-100 rounded-full p-1 mr-3 mt-0.5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 text-green-500"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-gray-600">
-                        Made with fresh ingredients
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <div className="bg-green-100 rounded-full p-1 mr-3 mt-0.5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 text-green-500"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-gray-600">
-                        Balanced nutritional profile
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <div className="bg-green-100 rounded-full p-1 mr-3 mt-0.5">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 text-green-500"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-gray-600">
-                        Satisfying portion size
-                      </span>
-                    </li>
-                  </ul>
+                {/* Size Selection */}
+                <div className="mb-6">
+                  <h4 className="font-bold text-gray-900 mb-4">Choose Size:</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {sizes.map((size) => (
+                      <button
+                        key={size.name}
+                        onClick={() => setSelectedSize(size.name)}
+                        className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
+                          selectedSize === size.name
+                            ? "border-green-500 bg-green-50 text-green-700"
+                            : "border-gray-200 hover:border-green-300 text-gray-700"
+                        }`}
+                      >
+                        <div className="font-bold">{size.name}</div>
+                        <div className="text-sm opacity-75">
+                          {size.description}
+                        </div>
+                        {size.price > 0 && (
+                          <div className="text-sm font-bold">
+                            +${size.price}
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quantity and Add to Cart */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center bg-gray-100 rounded-2xl p-2">
+                    <button
+                      onClick={() => handleQuantityChange(-1)}
+                      className="w-12 h-12 rounded-xl bg-white hover:bg-gray-50 flex items-center justify-center text-gray-600 hover:text-green-600 transition-all duration-300"
+                    >
+                      <Minus size={20} />
+                    </button>
+                    <span className="mx-6 text-2xl font-bold text-gray-900">
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => handleQuantityChange(1)}
+                      className="w-12 h-12 rounded-xl bg-white hover:bg-gray-50 flex items-center justify-center text-gray-600 hover:text-green-600 transition-all duration-300"
+                    >
+                      <Plus size={20} />
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleAddToCart}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl group"
+                  >
+                    <ShoppingCart size={24} className="mr-3" />
+                    Add to Cart
+                    <Zap
+                      size={24}
+                      className="ml-3 group-hover:rotate-12 transition-transform"
+                    />
+                  </button>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        </div>
+      </section>
 
-          {/* Ingredients Tab */}
-          {activeTab === "ingredients" && (
-            <div className="animate-fadeIn">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                Ingredients
-              </h2>
+      {/* Tabs Section */}
+      <section className="relative z-10 container mx-auto px-4 pb-24">
+        <div className="max-w-6xl mx-auto">
+          {/* Tab Navigation */}
+          <div ref={tabsRef} className="flex justify-center mb-12">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-3 shadow-xl border border-green-100">
+              <div className="flex space-x-2">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center px-8 py-4 rounded-2xl font-bold transition-all duration-300 ${
+                        activeTab === tab.id
+                          ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
+                          : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                      }`}
+                    >
+                      <Icon size={20} className="mr-2" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
 
-              {meal.ingredients ? (
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {meal.ingredients.split(",").map((ingredient, index) => (
-                      <li key={index} className="flex items-start">
-                        <div className="bg-green-100 rounded-full p-1 mr-3 mt-0.5">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 text-green-500"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-gray-600">
-                          {ingredient.trim()}
+          {/* Tab Content */}
+          <div
+            ref={detailsRef}
+            className="bg-white/80 backdrop-blur-xl rounded-3xl p-12 shadow-2xl border border-green-100"
+          >
+            {activeTab === "description" && (
+              <div className="space-y-8">
+                <h3 className="text-3xl font-black text-gray-900 mb-6">
+                  About This Meal
+                </h3>
+                <p className="text-lg text-gray-700 leading-relaxed mb-8">
+                  {meal.description ||
+                    "This exceptional dish represents the perfect harmony of flavors, textures, and nutritional value. Our expert chefs have carefully selected premium ingredients and employed time-tested cooking techniques to create a meal that not only satisfies your hunger but also delights your senses."}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <h4 className="text-2xl font-bold text-gray-900">
+                      Key Features
+                    </h4>
+                    <ul className="space-y-4">
+                      {[
+                        "Premium quality ingredients",
+                        "Expertly crafted by professional chefs",
+                        "Balanced nutritional profile",
+                        "Fresh preparation daily",
+                        "Sustainable sourcing practices",
+                      ].map((feature, index) => (
+                        <li key={index} className="flex items-center">
+                          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                            <Sparkles size={14} className="text-green-600" />
+                          </div>
+                          <span className="text-gray-700 font-medium">
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h4 className="text-2xl font-bold text-gray-900">
+                      Preparation Details
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl">
+                        <span className="font-bold text-gray-700">
+                          Prep Time
                         </span>
+                        <span className="text-green-600 font-bold">
+                          10 minutes
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-blue-50 rounded-2xl">
+                        <span className="font-bold text-gray-700">
+                          Cook Time
+                        </span>
+                        <span className="text-blue-600 font-bold">
+                          15 minutes
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-purple-50 rounded-2xl">
+                        <span className="font-bold text-gray-700">
+                          Difficulty
+                        </span>
+                        <span className="text-purple-600 font-bold">
+                          Professional
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "nutrition" && (
+              <div className="space-y-8">
+                <h3 className="text-3xl font-black text-gray-900 mb-6">
+                  Nutritional Information
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {[
+                    {
+                      label: "Calories",
+                      value: "450",
+                      unit: "kcal",
+                      color: "red",
+                    },
+                    { label: "Protein", value: "25", unit: "g", color: "blue" },
+                    { label: "Carbs", value: "35", unit: "g", color: "yellow" },
+                    { label: "Fat", value: "18", unit: "g", color: "green" },
+                  ].map((nutrient, index) => (
+                    <div
+                      key={index}
+                      className={`text-center p-6 bg-${nutrient.color}-50 rounded-2xl border border-${nutrient.color}-100`}
+                    >
+                      <div
+                        className={`text-4xl font-black text-${nutrient.color}-600 mb-2`}
+                      >
+                        {nutrient.value}
+                        <span className="text-lg">{nutrient.unit}</span>
+                      </div>
+                      <div className="text-gray-700 font-bold">
+                        {nutrient.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-100">
+                  <h4 className="text-2xl font-bold text-gray-900 mb-4">
+                    Health Benefits
+                  </h4>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      "Rich in essential vitamins and minerals",
+                      "High-quality protein for muscle health",
+                      "Complex carbohydrates for sustained energy",
+                      "Healthy fats for brain function",
+                      "Antioxidants for immune support",
+                      "Fiber for digestive health",
+                    ].map((benefit, index) => (
+                      <li key={index} className="flex items-center">
+                        <Leaf size={16} className="text-green-600 mr-3" />
+                        <span className="text-gray-700">{benefit}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-              ) : (
-                <p className="text-gray-600">
-                  No ingredient information available for this meal.
-                </p>
-              )}
-
-              <div className="mt-8 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <Info className="h-5 w-5 text-yellow-400" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-yellow-700">
-                      <span className="font-medium">Allergy Information:</span>{" "}
-                      Please contact our staff for detailed allergy information.
-                    </p>
-                  </div>
-                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Nutrition Tab */}
-          {activeTab === "nutrition" && (
-            <div className="animate-fadeIn">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                Nutritional Information
-              </h2>
-
-              <div className="bg-gray-50 rounded-xl p-6 mb-6">
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                    <div className="text-2xl font-bold text-green-500 mb-1">
-                      {nutritionalInfo.calories}
-                    </div>
-                    <div className="text-gray-500 text-sm">Calories</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                    <div className="text-2xl font-bold text-green-500 mb-1">
-                      {nutritionalInfo.protein}g
-                    </div>
-                    <div className="text-gray-500 text-sm">Protein</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                    <div className="text-2xl font-bold text-green-500 mb-1">
-                      {nutritionalInfo.carbs}g
-                    </div>
-                    <div className="text-gray-500 text-sm">Carbs</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                    <div className="text-2xl font-bold text-green-500 mb-1">
-                      {nutritionalInfo.fat}g
-                    </div>
-                    <div className="text-gray-500 text-sm">Fat</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                    <div className="text-2xl font-bold text-green-500 mb-1">
-                      {nutritionalInfo.fiber}g
-                    </div>
-                    <div className="text-gray-500 text-sm">Fiber</div>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-gray-600 mb-6">
-                This nutritional information is an estimate and may vary based
-                on portion size and preparation methods.
-              </p>
-
-              <div className="bg-gray-50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  Health Benefits
-                </h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <div className="bg-green-100 rounded-full p-1 mr-3 mt-0.5">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 text-green-500"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-700">
-                        Rich in protein
-                      </span>
-                      <p className="text-gray-600 text-sm">
-                        Helps build and repair tissues, supports immune
-                        function, and promotes satiety.
-                      </p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="bg-green-100 rounded-full p-1 mr-3 mt-0.5">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 text-green-500"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-700">
-                        Good source of fiber
-                      </span>
-                      <p className="text-gray-600 text-sm">
-                        Promotes digestive health, helps maintain healthy
-                        cholesterol levels, and supports blood sugar control.
-                      </p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="bg-green-100 rounded-full p-1 mr-3 mt-0.5">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 text-green-500"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-700">
-                        Essential vitamins and minerals
-                      </span>
-                      <p className="text-gray-600 text-sm">
-                        Contains various micronutrients that support overall
-                        health and wellbeing.
-                      </p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {/* Reviews Tab */}
-          {activeTab === "reviews" && (
-            <div className="animate-fadeIn">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                Customer Reviews
-              </h2>
-
-              {/* Review Form */}
-              {user && (
-                <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Write a Review
+            {activeTab === "reviews" && (
+              <div className="space-y-8">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-3xl font-black text-gray-900">
+                    Customer Reviews
                   </h3>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-medium mb-2">
-                      Your Rating
-                    </label>
-                    <Rating
-                      count={5}
-                      size={30}
-                      value={rating}
-                      onChange={(newRating) => setRating(newRating)}
-                      activeColor="#ffd700"
+                  <div className="flex items-center bg-yellow-50 px-6 py-3 rounded-2xl">
+                    <Star
+                      size={24}
+                      className="text-yellow-500 fill-yellow-500 mr-2"
                     />
+                    <span className="text-2xl font-black text-gray-900">
+                      {meal.rating?.toFixed(1) || "4.9"}
+                    </span>
+                    <span className="text-gray-600 ml-2">
+                      ({mockReviews.length} reviews)
+                    </span>
                   </div>
-
-                  <div className="mb-4">
-                    <label
-                      htmlFor="review"
-                      className="block text-gray-700 text-sm font-medium mb-2"
-                    >
-                      Your Review
-                    </label>
-                    <textarea
-                      id="review"
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="Share your experience with this meal..."
-                      value={reviewText}
-                      onChange={(e) => setReviewText(e.target.value)}
-                    ></textarea>
-                  </div>
-
-                  <button
-                    onClick={handleReviewSubmit}
-                    className="flex items-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    <Send size={18} className="mr-2" />
-                    Submit Review
-                  </button>
                 </div>
-              )}
 
-              {/* Reviews List */}
-              {meal.reviews && meal.reviews.length > 0 ? (
                 <div className="space-y-6">
-                  {meal.reviews.map((review, index) => (
+                  {mockReviews.map((review, index) => (
                     <div
-                      key={index}
-                      className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+                      key={review.id}
+                      ref={(el) => (reviewsRef.current[index] = el)}
+                      className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-gray-100 hover:border-green-200 transition-all duration-300"
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-start">
-                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 font-bold mr-3">
-                            {review.userName
-                              ? review.userName.charAt(0).toUpperCase()
-                              : "U"}
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-gray-800">
-                              {review.userName || "Anonymous"}
-                            </h4>
-                            {review.rating && (
-                              <div className="flex items-center mt-1">
-                                <Rating
-                                  count={5}
-                                  size={16}
-                                  value={Number(review.rating) || 0}
-                                  edit={false}
-                                  activeColor="#ffd700"
+                      <div className="flex items-start space-x-4">
+                        <img
+                          src={review.avatar || "/placeholder.svg"}
+                          alt={review.name}
+                          className="w-16 h-16 rounded-full object-cover shadow-lg"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <h5 className="font-bold text-gray-900 text-lg">
+                                {review.name}
+                              </h5>
+                              <p className="text-gray-500 text-sm">
+                                {review.date}
+                              </p>
+                            </div>
+                            <div className="flex items-center">
+                              {[...Array(review.rating)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  size={18}
+                                  className="text-yellow-500 fill-yellow-500"
                                 />
-                              </div>
-                            )}
+                              ))}
+                            </div>
                           </div>
+                          <p className="text-gray-700 leading-relaxed">
+                            {review.comment}
+                          </p>
                         </div>
-                        <span className="text-xs text-gray-500">
-                          {review.date ? formatDate(review.date) : ""}
-                        </span>
                       </div>
-                      <p className="text-gray-600">{review.text}</p>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="text-center py-12 bg-gray-50 rounded-xl">
-                  <MessageSquare
-                    size={48}
-                    className="mx-auto text-gray-300 mb-4"
-                  />
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                    No Reviews Yet
-                  </h3>
-                  <p className="text-gray-500 mb-6">
-                    Be the first to review this meal!
-                  </p>
-                  {!user && (
-                    <Link
-                      to="/auth/login"
-                      className="text-green-500 hover:text-green-600 font-medium"
-                    >
-                      Login to Write a Review
-                    </Link>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
 
-        {/* Related Meals Section */}
-        {/* <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            You Might Also Like
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((item) => (
-              <div
-                key={item}
-                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 group"
-              >
-                <div className="relative overflow-hidden h-48">
-                  <img
-                    src={`/placeholder.svg?height=200&width=300&text=Related${item}`}
-                    alt={`Related Meal ${item}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                    {["Breakfast", "Lunch", "Dinner", "Dessert"][item - 1]}
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-medium text-gray-800 group-hover:text-green-600 transition-colors">
-                    Related Meal Example {item}
-                  </h3>
-                  <div className="flex items-center mt-2 mb-3">
-                    <Star
-                      size={16}
-                      className="text-yellow-500 fill-yellow-500"
-                    />
-                    <span className="ml-1 text-sm text-gray-600">
-                      4.{item} (24 reviews)
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-green-500">
-                      ${(8.99 + item).toFixed(2)}
-                    </span>
-                    <Link
-                      to={`/meals/${item}`}
-                      className="text-sm text-gray-600 hover:text-green-600"
-                    >
-                      View Details
-                    </Link>
-                  </div>
+                <div className="text-center">
+                  <button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    Write a Review
+                  </button>
                 </div>
               </div>
-            ))}
+            )}
           </div>
-        </div> */}
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
